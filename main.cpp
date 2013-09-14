@@ -1,6 +1,6 @@
 /*
- * THOMAS
- */
+* THOMAS
+*/
 
 
 /** INCLUDES **/
@@ -26,8 +26,8 @@ char button[9] = {};
 extern void *socket_server();
 
 /**
- * Thread zum Senden der PWM Werte und zur langsamen Beschleunigung
- */
+* Thread zum Senden der PWM Werte und zur langsamen Beschleunigung
+*/
 
 void *send_pwm() {
     
@@ -67,27 +67,27 @@ void *send_pwm() {
 }
 
 /**
- * Hauptfunktion
- * @return 
- */
+* Hauptfunktion
+* @return
+*/
 int main(void) {
     
-	int power_x = 0, power_z = 0, power_r = 0; // X = axis[0] ; Y = axis[1] ; R = axis[3]
+int power_x = 0, power_z = 0, power_r = 0; // X = axis[0] ; Y = axis[1] ; R = axis[3]
 
-    	double tmp = 0;
+     double tmp = 0;
 
-	
-	// Mit RS232-Port verbinden
-	rs232 = connect();
-	
-	pthread_t t_send_pwm, t_socket_server;
+
+// Mit RS232-Port verbinden
+rs232 = connect();
+
+pthread_t t_send_pwm, t_socket_server;
         pthread_create(&t_send_pwm, NULL, send_pwm, NULL);
         pthread_create(&t_socket_server, NULL, socket_server, NULL);
         
         fflush(stdout);
-	
-	while(!end)
-	{
+
+while(!end)
+{
 
             power_x = (int)(axis[0]/327);
 
@@ -141,22 +141,21 @@ int main(void) {
                 right = (power_r/2) * (-1);
             }
 
-            // print the results 
-            //printf("Links: %d   Rechts: %d\n", left, right);
+            // print the results
+            //printf("Links: %d Rechts: %d\n", left, right);
 
             usleep(2000);
             //printf("\r");
         
-	} // while
+} // while
     
-	end = 1;
+end = 1;
         printf("\n\nClosing threads ...\n");
         usleep(1000000);
-	setMotorSpeed(rs232, MLEFT, 0);
-	setMotorSpeed(rs232, MRIGHT, 0);
+setMotorSpeed(rs232, MLEFT, 0);
+setMotorSpeed(rs232, MRIGHT, 0);
     
-	// Verbindung zum RS232-Port trennen
-	disconnect(rs232);
+// Verbindung zum RS232-Port trennen
+disconnect(rs232);
     
 } // main
-
