@@ -1,12 +1,12 @@
 /*
--- SOCKET-KLASSE :: IMPLEMENTIERUNG --
+-- TCP-SERVER-KLASSE :: IMPLEMENTIERUNG --
 */
 
 
 /* INCLUDES */
 
 // Klassenheader
-#include "socket.h"
+#include "TCPServer.h"
 using namespace THOMAS;
 
 // C++-IO-Stream-Klasse
@@ -35,10 +35,11 @@ using namespace THOMAS;
 
 /* FUNKTIONEN */
 
-Socket::Socket(unsigned short port, ComputeReceivedDataFunction computeReceivedDataFunction)
+TCPServer::TCPServer(unsigned short port, ComputeReceivedDataFunction computeReceivedDataFunction, void *cRDFParams)
 {
 	// Datenverarbeitungsfunktion merken
 	_computeReceivedDataFunction = computeReceivedDataFunction;
+	_cRDFParams = cRDFParams;
 	
 	// Socket erstellen
 	_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -68,12 +69,14 @@ Socket::Socket(unsigned short port, ComputeReceivedDataFunction computeReceivedD
 	_listening = false;
 }
 
-Socket::~Socket()
+TCPServer::~TCPServer()
 {
-	
+	// Listen-Thread ggf. beenden
+	if(_listening)
+		EndListen();
 }
 
-void Socket::BeginListen()
+void TCPServer::BeginListen()
 {
 	// L‰uft der Listen-Vorgang schon?
 	if(_listening)
@@ -81,10 +84,10 @@ void Socket::BeginListen()
 	
 	// Listen-Thread erstellen
 	_listening = true;
-	_listenThread = new std::thread(&Socket::ListenWrapper, this);
+	_listenThread = new std::thread(&TCPServer::ListenWrapper, this);
 }
 
-void Socket::EndListen()
+void TCPServer::EndListen()
 {
 	// L‰uft ¸berhaupt ein Listen-Vorgang?
 	if(!_listening)
@@ -93,9 +96,12 @@ void Socket::EndListen()
 	// Listen-Vorgang abbrechen, der Thread terminiert von selbst, der aktuelle Thread wird so lange angehalten
 	_listening = false;
 	_listenThread->join();
+	
+	// Speicher freigeben
+	delete _listenThread;
 }
 
-void Socket::Listen()
+void TCPServer::Listen()
 {
 	// Client-Warteschlange erstellen (L‰nge: 5)
 	if(listen(_socket, 5) == -1)
@@ -124,7 +130,7 @@ void Socket::Listen()
 		}
 		
 		// Daten in separatem Thread empfangen
-		clientReceiveThreads.push_front(new std::thread(&Socket::ReceiveClientWrapper, this, clientSocket));
+		clientReceiveThreads.push_front(new std::thread(&TCPServer::ReceiveClientWrapper, this, clientSocket));
 	}
 	
 	// Abwarten, bis alle Client-Receive-Threads beendet sind
@@ -141,7 +147,7 @@ void Socket::Listen()
 	close(_socket);
 }
 
-void Socket::ReceiveClient(int clientSocket)
+void TCPServer::ReceiveClient(int clientSocket)
 {
 	// Solange kein Abbruchbefehl kommt, Daten empfangen
 	int dataLength;
@@ -167,7 +173,7 @@ void Socket::ReceiveClient(int clientSocket)
 		}
 		
 		// Daten verarbeiten
-		_computeReceivedDataFunction(buffer, dataLength);
+		_computeReceivedDataFunction(buffer, dataLength, _cRDFParams);
 	}
 	
 	// Client-Socket schlieﬂen

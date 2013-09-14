@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "socket.h"
+#include "TCPServer.h"
 
 void compute(BYTE *data, int len)
 {
@@ -10,7 +10,7 @@ void compute(BYTE *data, int len)
 
 int main()
 {
-	THOMAS::Socket *s = new THOMAS::Socket(12345, compute);
+	THOMAS::TCPServer *s = new THOMAS::TCPServer(12345, compute);
 	s->BeginListen();
 	
 	while(true);

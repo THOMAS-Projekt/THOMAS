@@ -6,7 +6,7 @@
 /* INCLUDES */
 
 // Klassenheader
-#include "rs232.h"
+#include "RS232.h"
 using namespace THOMAS;
 
 // C++-IO-Stream-Klasse
@@ -14,10 +14,6 @@ using namespace THOMAS;
 
 // C++-String-Klasse
 #include <string>
-
-// C-Standardbibliothek
-// Die abs()-Funktion wird hier benötigt.
-#include <cstdlib>
 
 // Terminal-IO-Definitionen [Non-Standard]
 // In diesem Header wird u.a. die termios-Struktur definiert.
@@ -82,7 +78,7 @@ RS232::~RS232()
 	close(_handle);
 }
 
-bool RS232::Send(BYTE com, BYTE *params, int paramCount)
+void RS232::Send(BYTE com, BYTE *params, int paramCount)
 {
 	// Befehlsarray erstellen (3 Sonderbytes + Kommandobyte + Parameter)
 	BYTE *data = new BYTE[4 + paramCount];
@@ -116,81 +112,4 @@ bool RS232::Send(BYTE com, BYTE *params, int paramCount)
 	
 	// Speicher freigeben
 	delete[] data;
-
-	// Alles in Ordnung
-	return true;
-}
-
-bool RS232::SetMotorSpeed(int motor, int speed)
-{
-	// Speed auf 255-Werte umrechnen
-	speed = static_cast<int>(speed * 2.55);
-	
-	// Das Parameter-Array
-	BYTE params[2] = {0};
-	
-	// Rechter Motor oder beide Motoren?
-	if(motor & MRIGHT == MRIGHT)
-	{
-		// Neue Rotation? Rotation bestimmen
-		if(_lastSpeed[MRIGHT_ARR] <= 0 && speed > 0)
-		{
-			params[0] = MRIGHT;
-			params[1] = FORWARDS;
-			if(!Send(5, params, 2))
-				return false;
-		}
-		
-		if(_lastSpeed[MRIGHT_ARR] >= 0 && speed < 0)
-		{
-			params[0] = MRIGHT;
-			params[1] = BACKWARDS;
-			if(!Send(5, params, 2))
-				return false;
-		}
-		
-		if(_lastSpeed[MRIGHT_ARR] != speed) 
-		{
-			// Geschwindigkeit senden (ohne Vorzeichen)
-			params[0] = MRIGHT;
-			params[1] = abs(speed);
-			if(!Send(2, params, 2))
-				return false;
-		}
-		_lastSpeed[MRIGHT_ARR] = speed;
-	}
-	
-	// Linker Motor oder beide Motoren?
-	if(motor & MLEFT == MLEFT)
-	{
-		// Neue Rotation? Rotation bestimmen
-		if(_lastSpeed[MLEFT_ARR] <= 0 && speed > 0)
-		{
-			params[0] = MLEFT;
-			params[1] = FORWARDS;
-			if(!Send(5, params, 2))
-				return false;
-		}
-		
-		if(_lastSpeed[MLEFT_ARR] >= 0 && speed < 0)
-		{
-			params[0] = MLEFT;
-			params[1] = BACKWARDS;
-			if(!Send(5, params, 2))
-				return false;
-		}
-		
-		if(_lastSpeed[MLEFT_ARR] != speed) 
-		{
-			// Geschwindigkeit senden (ohne Vorzeichen)
-			params[0] = MLEFT;
-			params[1] = abs(speed);
-			if(!Send(2, params, 2))
-				return false;
-		}
-		_lastSpeed[MLEFT_ARR] = speed;
-	}
-	
-	// Alles toll
-	return true;
 }
