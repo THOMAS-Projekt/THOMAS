@@ -1,8 +1,8 @@
-#pragma once
+Ôªø#pragma once
 /*
 -- TCP-SERVER-KLASSE :: HEADER --
 Definiert die TCPServer-Klasse.
-Diese Klasse stellt einen TCP-Server an einem angegebenen Port dar, der Daten von einer beliebig groﬂen Menge an Clients empfangen und an eine Verarbeitungsfunktion weiterreichen kann.
+Diese Klasse stellt einen TCP-Server an einem angegebenen Port dar, der Daten von einer beliebig gro√üen Menge an Clients empfangen und an eine Verarbeitungsfunktion weiterreichen kann.
 */
 
 
@@ -26,15 +26,15 @@ namespace THOMAS
 		// Definiert den Typ der Funktion, die die empfangenen Client-Daten verarbeitet.
 		// Parameter:
 		// -> [1]: Ein Puffer-Array mit den empfangenen Daten.
-		// -> [2]: Die L‰nge der empfangenen Daten im Puffer-Array beginnend bei Index 0. Der evtl. ¸brige Teil des Puffer-Arrays muss unter Umst‰nden verworfen werden.
-		// -> [3]: Weitere benutzerdefinierte Parameter, die an die Funktion ¸bergeben werden sollen.
+		// -> [2]: Die L√§nge der empfangenen Daten im Puffer-Array beginnend bei Index 0. Der evtl. √ºbrige Teil des Puffer-Arrays muss unter Umst√§nden verworfen werden.
+		// -> [3]: Weitere benutzerdefinierte Parameter, die an die Funktion √ºbergeben werden sollen.
 		typedef void (*ComputeReceivedDataFunction)(BYTE *, int, void *);
 	
 	private:
 		// Das Socket-Handle.
 		int _socket;
 		
-		// Gibt an, ob der Listen-Vorgang l‰uft.
+		// Gibt an, ob der Listen-Vorgang l√§uft.
 		bool _listening;
 		
 		// Der interne Listen()-Thread.
@@ -43,24 +43,24 @@ namespace THOMAS
 		// Die Funktion, die die empfangenen Client-Daten verarbeitet.
 		ComputeReceivedDataFunction _computeReceivedDataFunction;
 		
-		// Die an die Verarbeitungsfunktion zu ¸bergebenden benutzerdefinierten Parameter.
+		// Die an die Verarbeitungsfunktion zu √ºbergebenden benutzerdefinierten Parameter.
 		void *_cRDFParams;
 		
-		// Wartet auf ankommende Clienten und empf‰ngt dann deren Daten.
+		// Wartet auf ankommende Clienten und empf√§ngt dann deren Daten.
 		// Parameter: Werden ignoriert.
 		void Listen();
 		
-		// Wrapper, um die Listen-Memberfunktion sauber an einen separaten Thread zu ¸bergeben. Wird nur von BeginListen() benutzt.
+		// Wrapper, um die Listen-Memberfunktion sauber an einen separaten Thread zu √ºbergeben. Wird nur von BeginListen() benutzt.
 		// Parameter:
-		// -> obj: Das zur Listen-Funktion gehˆrende TCPServer-Objekt.
+		// -> obj: Das zur Listen-Funktion geh√∂rende TCPServer-Objekt.
 		static void ListenWrapper(TCPServer *obj)
 		{
 			obj->Listen();
 		}
 		
-		// Wrapper, um die ReceiveClient-Memberfunktion sauber an einen separaten Thread zu ¸bergeben. Wird nur von Listen() benutzt.
+		// Wrapper, um die ReceiveClient-Memberfunktion sauber an einen separaten Thread zu √ºbergeben. Wird nur von Listen() benutzt.
 		// Parameter:
-		// -> obj: Das zur ReceiveClient-Funktion gehˆrende TCPServer-Objekt.
+		// -> obj: Das zur ReceiveClient-Funktion geh√∂rende TCPServer-Objekt.
 		// -> clientSocket: Das Socket-Handle des verbundenen Client.
 		static void ReceiveClientWrapper(TCPServer *obj, int clientSocket)
 		{
@@ -78,7 +78,7 @@ namespace THOMAS
 		// Parameter:
 		// -> port: Der Port, an dem auf Clienten gewartet werden soll.
 		// -> computeReceivedDataFunction: Die Funktion, die die empfangenen Client-Daten verarbeitet.
-		// -> cRDFParams: Die Parameter, die zus‰tzlich an computeReceivedDataFunction ¸bergeben werden sollen.
+		// -> cRDFParams: Die Parameter, die zus√§tzlich an computeReceivedDataFunction √ºbergeben werden sollen.
 		TCPServer(unsigned short port, ComputeReceivedDataFunction computeReceivedDataFunction, void *cRDFParams);
 		
 		// Destruktor.

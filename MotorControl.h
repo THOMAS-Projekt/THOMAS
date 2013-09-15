@@ -1,9 +1,9 @@
-#pragma once
+Ôªø#pragma once
 /*
 -- MOTOR-CONTROL-KLASSE :: HEADER --
 Definiert die MotorControl-Klasse.
-Diese Klasse ¸bernimmt die Netzwerkkommunikation mit dem Joy-Stick und steuert dadurch die Motoren.
-Verzˆgerte Beschleunigungen werden eingesetzt, um abrupte Geschwindigkeits‰nderungen abzufangen.
+Diese Klasse √ºbernimmt die Netzwerkkommunikation mit dem Joy-Stick und steuert dadurch die Motoren.
+Verz√∂gerte Beschleunigungen werden eingesetzt, um abrupte Geschwindigkeits√§nderungen abzufangen.
 */
 
 
@@ -41,7 +41,7 @@ Verzˆgerte Beschleunigungen werden eingesetzt, um abrupte Geschwindigkeits‰nderu
 #define FORWARDS 1
 #define BACKWARDS 0
 
-// Definiert die Verzˆgerung (in us), die zwischen zwei Motor-Geschwindigkeits‰nderungsbefehlen liegen soll.
+// Definiert die Verz√∂gerung (in us), die zwischen zwei Motor-Geschwindigkeits√§nderungsbefehlen liegen soll.
 #define MOTOR_ACC_DELAY 100000
 
 
@@ -64,7 +64,7 @@ namespace THOMAS
 		std::thread *_controlMotorSpeedThread;
 		
 		// Speichert die jeweils letzten gesendeten Motorgeschwindigkeiten.
-		// Hiermit werden die benˆtigten Drehrichtungswechsel-Befehle der Motoren realisiert.
+		// Hiermit werden die ben√∂tigten Drehrichtungswechsel-Befehle der Motoren realisiert.
 		// Inhalt:
 		// [0]: MRIGHT.
 		// [1]: MLEFT.
@@ -76,7 +76,7 @@ namespace THOMAS
 		// Die Anzahl der Joystick-Buttons.
 		int _joystickButtonCount;
 		
-		// Gibt an, ob die Joystick-Datenarrays ordnungsgem‰ﬂ initialisiert worden sind.
+		// Gibt an, ob die Joystick-Datenarrays ordnungsgem√§√ü initialisiert worden sind.
 		bool _joystickDataOK;
 		
 		// Die letzten empfangenen Joystick-Achswerte.
@@ -85,10 +85,10 @@ namespace THOMAS
 		// Die letzten empfangenen Joystick-Buttonwerte.
 		BYTE *_joystickButtons;
 		
-		// Joystick-Daten-Mutex. Sch¸tzt vor asynchronem Zugriff auf die Joystick-Datenwerte.
+		// Joystick-Daten-Mutex. Sch√ºtzt vor asynchronem Zugriff auf die Joystick-Datenwerte.
 		std::mutex *_joystickMutex;
 		
-		// Sendet den Geschwindigkeits‰nderungsbefehl f¸r den angegebenen Motor.
+		// Sendet den Geschwindigkeits√§nderungsbefehl f√ºr den angegebenen Motor.
 		// Parameter:
 		// -> motor: Der betroffene Motor (MRIGHT, MLEFT oder MBOTH).
 		// -> speed: Die neue Motorgeschwindigkeit (-100 bis 100).
@@ -97,12 +97,12 @@ namespace THOMAS
 		// Verarbeitet vom Server empfangene Steuerbefehle.
 		// Parameter:
 		// -> data: Die vom Server empfangenen Daten.
-		// -> dataLength: Die L‰nge der vom Server empfangenen Daten.
+		// -> dataLength: Die L√§nge der vom Server empfangenen Daten.
 		void ComputeClientCommand(BYTE *data, int dataLength);
 		
-		// Wrapper, um die ComputeClientCommand-Memberfunktion sauber an den TCP-Server zu ¸bergeben.
+		// Wrapper, um die ComputeClientCommand-Memberfunktion sauber an den TCP-Server zu √ºbergeben.
 		// Parameter:
-		// -> obj: Das zur ComputeClientCommand-Funktion gehˆrende MotorControl-Objekt.
+		// -> obj: Das zur ComputeClientCommand-Funktion geh√∂rende MotorControl-Objekt.
 		static void ComputeClientCommandWrapper(BYTE *data, int dataLength, void *obj)
 		{
 			(reinterpret_cast<MotorControl *>(obj))->ComputeClientCommand(data, dataLength);
@@ -111,9 +111,9 @@ namespace THOMAS
 		// Passt kontinuierlich die Motorgeschwindigkeit an die aktuellen Joystick-Daten an.
 		void ControlMotorSpeed();
 		
-		// Wrapper, um die ControlMotorSpeed-Memberfunktion sauber an einen separaten Thread zu ¸bergeben. Wird nur von Run() benutzt.
+		// Wrapper, um die ControlMotorSpeed-Memberfunktion sauber an einen separaten Thread zu √ºbergeben. Wird nur von Run() benutzt.
 		// Parameter:
-		// -> obj: Das zur ControlMotorSpeed-Funktion gehˆrende MotorControl-Objekt.
+		// -> obj: Das zur ControlMotorSpeed-Funktion geh√∂rende MotorControl-Objekt.
 		static void ControlMotorSpeedWrapper(MotorControl *obj)
 		{
 			obj->ControlMotorSpeed();

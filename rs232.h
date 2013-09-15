@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 /*
 -- RS232-KLASSE :: HEADER --
 Definiert die RS232-Klasse.

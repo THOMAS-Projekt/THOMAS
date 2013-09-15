@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 -- MOTOR-CONTROL-KLASSE :: IMPLEMENTIERUNG --
 */
 
@@ -13,19 +13,19 @@ using namespace THOMAS;
 #include <string>
 
 // C++-Stringstream-Klasse
-// Diese Klasse erlaubt die Verkettung von Zeichenfolgen, sie wird hier für die Erzeugung von aussagekräftigen Exeptions benötigt.
+// Diese Klasse erlaubt die Verkettung von Zeichenfolgen, sie wird hier fÃ¼r die Erzeugung von aussagekrÃ¤ftigen Exeptions benÃ¶tigt.
 #include <sstream>
 
 // C-Standardbibliothek
-// Die abs()-Funktion wird hier benötigt.
+// Die abs()-Funktion wird hier benÃ¶tigt.
 #include <cstdlib>
 
 // C-Stringfunktionen
-// Die memcpy() und die memset()-Funktion werden hier benötigt.
+// Die memcpy() und die memset()-Funktion werden hier benÃ¶tigt.
 #include <cstring>
 
 // UNIX-Standardfunktionen [Non-Standard]
-// Hier wird die usleep()-Funktion benötigt.
+// Hier wird die usleep()-Funktion benÃ¶tigt.
 #include <unistd.h>
 
 #include <iostream>
@@ -33,7 +33,7 @@ using namespace THOMAS;
 
 MotorControl::MotorControl()
 {
-	// Die Steuerung läuft noch nicht
+	// Die Steuerung lÃ¤uft noch nicht
 	_running = false;
 }
 
@@ -46,7 +46,7 @@ MotorControl::~MotorControl()
 
 void MotorControl::Run()
 {
-	// Läuft die Steuerung schon?
+	// LÃ¤uft die Steuerung schon?
 	if(_running)
 		throw std::string("Fehler: Die Motorsteuerung ist bereits aktiv!");
 	_running = true;
@@ -74,7 +74,7 @@ void MotorControl::Run()
 
 void MotorControl::Stop()
 {
-	// Läuft die Steuerung?
+	// LÃ¤uft die Steuerung?
 	if(!_running)
 		throw std::string("Fehler: Die Motorsteuerung ist nicht aktiv!");
 	_running = false;
@@ -101,7 +101,7 @@ void MotorControl::ControlMotorSpeed()
 	{
 		
 		
-		// Kurz warten, um den RS232-Port nicht zu überlasten und die Motoren nicht zu stark zu beschleunigen
+		// Kurz warten, um den RS232-Port nicht zu Ã¼berlasten und die Motoren nicht zu stark zu beschleunigen
 		usleep(MOTOR_ACC_DELAY);
 	}
 	
@@ -115,7 +115,7 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 		std::cout << data[i] << " ";
 	std::cout << std::endl;
 	
-	// Kommandobyte prüfen
+	// Kommandobyte prÃ¼fen
 	switch(data[0])
 	{
 		// JOYSTICK_HEADER
@@ -132,7 +132,7 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 				_joystickAxis = new BYTE[_joystickAxisCount];
 				_joystickButtons = new BYTE[_joystickButtonCount];
 				
-				// Empfangsarrays auf 0 setzen, damit keine zufälligen Befehle ausgeführt werden
+				// Empfangsarrays auf 0 setzen, damit keine zufÃ¤lligen Befehle ausgefÃ¼hrt werden
 				memset(&_joystickAxis, 0, _joystickAxisCount);
 				memset(&_joystickButtons, 0, _joystickButtonCount);
 			}
@@ -167,7 +167,7 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 			break;
 		}
 		
-		// Ungültiges Kommando
+		// UngÃ¼ltiges Kommando
 		default:
 		{
 			// Fehler

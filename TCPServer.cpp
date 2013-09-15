@@ -1,4 +1,4 @@
-/*
+Ôªø/*
 -- TCP-SERVER-KLASSE :: IMPLEMENTIERUNG --
 */
 
@@ -47,7 +47,7 @@ TCPServer::TCPServer(unsigned short port, ComputeReceivedDataFunction computeRec
 	// Ist bei der Socketerstellung ein Fehler aufgetreten?
 	if(_socket == -1)
 	{
-		// Exception auslˆsen
+		// Exception ausl√∂sen
 		throw std::string("Beim Erstellen des Server-Sockets ist ein Fehler aufgetreten!");
 	}
 	
@@ -55,17 +55,17 @@ TCPServer::TCPServer(unsigned short port, ComputeReceivedDataFunction computeRec
 	sockaddr_in serverAddress;
 	serverAddress.sin_family = AF_INET;
 	serverAddress.sin_port = htons(port);
-	serverAddress.sin_addr.s_addr = INADDR_ANY; // Adresse des Computers, auf dem der Server l‰uft
+	serverAddress.sin_addr.s_addr = INADDR_ANY; // Adresse des Computers, auf dem der Server l√§uft
 	memset(&serverAddress.sin_zero, 0, 8); // Das letzte Element der Struktur muss auf 0 gesetzt sein
 	
 	// Socket binden
 	if(bind(_socket, reinterpret_cast<sockaddr *>(&serverAddress), sizeof(serverAddress)) == -1)
 	{
-		// Ein Fehler ist aufgetreten, Exception auslˆsen
+		// Ein Fehler ist aufgetreten, Exception ausl√∂sen
 		throw std::string("Beim Binden des Server-Sockets ist ein Fehler aufgetreten!");
 	}
 	
-	// Noch l‰uft kein Listen-Vorgang
+	// Noch l√§uft kein Listen-Vorgang
 	_listening = false;
 }
 
@@ -78,7 +78,7 @@ TCPServer::~TCPServer()
 
 void TCPServer::BeginListen()
 {
-	// L‰uft der Listen-Vorgang schon?
+	// L√§uft der Listen-Vorgang schon?
 	if(_listening)
 		throw std::string("Fehler: Der Listen-Vorgang ist bereits aktiv!");
 	
@@ -89,7 +89,7 @@ void TCPServer::BeginListen()
 
 void TCPServer::EndListen()
 {
-	// L‰uft ¸berhaupt ein Listen-Vorgang?
+	// L√§uft √ºberhaupt ein Listen-Vorgang?
 	if(!_listening)
 		throw std::string("Fehler: Es ist kein Listen-Vorgang aktiv!");
 	
@@ -103,10 +103,10 @@ void TCPServer::EndListen()
 
 void TCPServer::Listen()
 {
-	// Client-Warteschlange erstellen (L‰nge: 5)
+	// Client-Warteschlange erstellen (L√§nge: 5)
 	if(listen(_socket, 5) == -1)
 	{
-		// Fehler, Exception auslˆsen
+		// Fehler, Exception ausl√∂sen
 		throw std::string("Konnte Client-Warteschlange nicht erstellen!");
 	}
 	
@@ -143,7 +143,7 @@ void TCPServer::Listen()
 		delete *i;
 	}
 	
-	// Server-Socket schlieﬂen
+	// Server-Socket schlie√üen
 	close(_socket);
 }
 
@@ -155,7 +155,7 @@ void TCPServer::ReceiveClient(int clientSocket)
 	BYTE *buffer = new BYTE[bufferLength];
 	while(_listening)
 	{
-		// Daten empfangen, w‰hrenddessen blockieren
+		// Daten empfangen, w√§hrenddessen blockieren
 		dataLength = recv(clientSocket, buffer, bufferLength, 0);
 		
 		// Ist ein Fehler aufgetreten?
@@ -176,6 +176,6 @@ void TCPServer::ReceiveClient(int clientSocket)
 		_computeReceivedDataFunction(buffer, dataLength, _cRDFParams);
 	}
 	
-	// Client-Socket schlieﬂen
+	// Client-Socket schlie√üen
 	close(clientSocket);
 }

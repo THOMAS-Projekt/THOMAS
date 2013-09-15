@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 -- HAUPTPROGRAMM --
 */
 
@@ -10,7 +10,7 @@
 using namespace THOMAS;
 
 // UNIX-Standard-Funktionen [Non-Standard]
-// Die sleep()-Funktion wird benötigt.
+// Die sleep()-Funktion wird benÃ¶tigt.
 #include <unistd.h>
 
 /* FUNKTIONEN */
@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 	MotorControl *motorControl = new MotorControl();
 	motorControl->Run();
 	
-	// Programm laufen lassen, Prozessor nicht unnötig belasten (alles läuft in separaten Threads)
+	// Programm laufen lassen, Prozessor nicht unnÃ¶tig belasten (alles lÃ¤uft in separaten Threads)
 	// TODO: Programm-Befehle per Tastatur etc.
 	while(true)
 		sleep(2);

@@ -1,4 +1,4 @@
-CPPARGS= -std=c++11
+﻿CPPARGS= -std=c++11
 
 all: main.o RS232.o TCPServer.o MotorControl.o
 	g++ RS232.o TCPServer.o MotorControl.o main.o -o thomas

@@ -1,4 +1,4 @@
-/*
+Ôªø/*
 -- RS232-KLASSE :: IMPLEMENTIERUNG --
 */
 
@@ -20,11 +20,11 @@ using namespace THOMAS;
 #include <termios.h>
 
 // POSIX-Definitionen [Non-Standard]
-// Dieser Header enth‰lt u.a. Definitionen f¸r viele POSIX-Systemaufrufe.
+// Dieser Header enth√§lt u.a. Definitionen f√ºr viele POSIX-Systemaufrufe.
 #include <unistd.h>
 
 // File-Control-Definitionen [Non-Standard]
-// Dieser Header erh‰lt u.a. die Definition des open()-Systemaufrufs.
+// Dieser Header erh√§lt u.a. die Definition des open()-Systemaufrufs.
 #include <fcntl.h>
 
 
