@@ -15,6 +15,12 @@ Verzögerte Beschleunigungen werden eingesetzt, um abrupte Geschwindigkeitsänderu
 // TCPServer-Klasse
 #include "TCPServer.h"
 
+// C++-mutex-Klasse
+#include <mutex>
+
+// C++-thread-Klasse
+#include <thread>
+
 
 /* KONSTANTEN */
 
@@ -35,6 +41,9 @@ Verzögerte Beschleunigungen werden eingesetzt, um abrupte Geschwindigkeitsänderu
 #define FORWARDS 1
 #define BACKWARDS 0
 
+// Definiert die Verzögerung (in us), die zwischen zwei Motor-Geschwindigkeitsänderungsbefehlen liegen soll.
+#define MOTOR_ACC_DELAY 100000
+
 
 /* KLASSE */
 namespace THOMAS
@@ -51,12 +60,33 @@ namespace THOMAS
 		// Der TCP-Server.
 		TCPServer *_server;
 		
+		// Der Motorgeschwindigkeits-Anpassungs-Thread.
+		std::thread *_controlMotorSpeedThread;
+		
 		// Speichert die jeweils letzten gesendeten Motorgeschwindigkeiten.
 		// Hiermit werden die benötigten Drehrichtungswechsel-Befehle der Motoren realisiert.
 		// Inhalt:
 		// [0]: MRIGHT.
 		// [1]: MLEFT.
 		int _lastSpeed[2];
+		
+		// Die Anzahl der Joystick-Achsen.
+		int _joystickAxisCount;
+		
+		// Die Anzahl der Joystick-Buttons.
+		int _joystickButtonCount;
+		
+		// Gibt an, ob die Joystick-Datenarrays ordnungsgemäß initialisiert worden sind.
+		bool _joystickDataOK;
+		
+		// Die letzten empfangenen Joystick-Achswerte.
+		BYTE *_joystickAxis;
+		
+		// Die letzten empfangenen Joystick-Buttonwerte.
+		BYTE *_joystickButtons;
+		
+		// Joystick-Daten-Mutex. Schützt vor asynchronem Zugriff auf die Joystick-Datenwerte.
+		std::mutex *_joystickMutex;
 		
 		// Sendet den Geschwindigkeitsänderungsbefehl für den angegebenen Motor.
 		// Parameter:
@@ -70,12 +100,23 @@ namespace THOMAS
 		// -> dataLength: Die Länge der vom Server empfangenen Daten.
 		void ComputeClientCommand(BYTE *data, int dataLength);
 		
-		// Wrapper, um die ComputeClientCommand-Memberfunktion sauber an den TCP-Server zu übergeben
+		// Wrapper, um die ComputeClientCommand-Memberfunktion sauber an den TCP-Server zu übergeben.
 		// Parameter:
 		// -> obj: Das zur ComputeClientCommand-Funktion gehörende MotorControl-Objekt.
 		static void ComputeClientCommandWrapper(BYTE *data, int dataLength, void *obj)
 		{
 			(reinterpret_cast<MotorControl *>(obj))->ComputeClientCommand(data, dataLength);
+		}
+		
+		// Passt kontinuierlich die Motorgeschwindigkeit an die aktuellen Joystick-Daten an.
+		void ControlMotorSpeed();
+		
+		// Wrapper, um die ControlMotorSpeed-Memberfunktion sauber an einen separaten Thread zu übergeben. Wird nur von Run() benutzt.
+		// Parameter:
+		// -> obj: Das zur ControlMotorSpeed-Funktion gehörende MotorControl-Objekt.
+		static void ControlMotorSpeedWrapper(MotorControl *obj)
+		{
+			obj->ControlMotorSpeed();
 		}
 		
 	public:

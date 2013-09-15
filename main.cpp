@@ -9,6 +9,9 @@
 #include "MotorControl.h"
 using namespace THOMAS;
 
+// UNIX-Standard-Funktionen [Non-Standard]
+// Die sleep()-Funktion wird benötigt.
+#include <unistd.h>
 
 /* FUNKTIONEN */
 
@@ -19,5 +22,8 @@ int main(int argc, char **argv)
 	MotorControl *motorControl = new MotorControl();
 	motorControl->Run();
 	
-	while(true);
+	// Programm laufen lassen, Prozessor nicht unnötig belasten (alles läuft in separaten Threads)
+	// TODO: Programm-Befehle per Tastatur etc.
+	while(true)
+		sleep(2);
 }
