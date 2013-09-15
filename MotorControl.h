@@ -80,7 +80,11 @@ namespace THOMAS
 		bool _joystickDataOK;
 		
 		// Die letzten empfangenen Joystick-Achswerte.
-		BYTE *_joystickAxis;
+		// Vorausgesetzt:
+		// [0]: X
+		// [1]: Z
+		// [2]: R
+		short *_joystickAxis;
 		
 		// Die letzten empfangenen Joystick-Buttonwerte.
 		BYTE *_joystickButtons;
@@ -91,7 +95,7 @@ namespace THOMAS
 		// Sendet den Geschwindigkeitsänderungsbefehl für den angegebenen Motor.
 		// Parameter:
 		// -> motor: Der betroffene Motor (MRIGHT, MLEFT oder MBOTH).
-		// -> speed: Die neue Motorgeschwindigkeit (-100 bis 100).
+		// -> speed: Die neue Motorgeschwindigkeit (-255 bis 255).
 		void SendMotorSpeed(int motor, int speed);
 		
 		// Verarbeitet vom Server empfangene Steuerbefehle.

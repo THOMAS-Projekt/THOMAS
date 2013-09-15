@@ -9,11 +9,11 @@
 #include "TCPServer.h"
 using namespace THOMAS;
 
+// THOMASException-Klasse
+#include "THOMASException.h"
+
 // C++-IO-Stream-Klasse
 #include <iostream>
-
-// C++-String-Klasse
-#include <string>
 
 // C++-Forward-List-Klasse
 #include <forward_list>
@@ -48,7 +48,7 @@ TCPServer::TCPServer(unsigned short port, ComputeReceivedDataFunction computeRec
 	if(_socket == -1)
 	{
 		// Exception auslösen
-		throw std::string("Beim Erstellen des Server-Sockets ist ein Fehler aufgetreten!");
+		throw THOMASException("Beim Erstellen des Server-Sockets ist ein Fehler aufgetreten!");
 	}
 	
 	// Server-Adressstruktur erstellen
@@ -62,7 +62,7 @@ TCPServer::TCPServer(unsigned short port, ComputeReceivedDataFunction computeRec
 	if(bind(_socket, reinterpret_cast<sockaddr *>(&serverAddress), sizeof(serverAddress)) == -1)
 	{
 		// Ein Fehler ist aufgetreten, Exception auslösen
-		throw std::string("Beim Binden des Server-Sockets ist ein Fehler aufgetreten!");
+		throw THOMASException("Beim Binden des Server-Sockets ist ein Fehler aufgetreten!");
 	}
 	
 	// Noch läuft kein Listen-Vorgang
@@ -80,7 +80,7 @@ void TCPServer::BeginListen()
 {
 	// Läuft der Listen-Vorgang schon?
 	if(_listening)
-		throw std::string("Fehler: Der Listen-Vorgang ist bereits aktiv!");
+		throw THOMASException("Fehler: Der Listen-Vorgang ist bereits aktiv!");
 	
 	// Listen-Thread erstellen
 	_listening = true;
@@ -91,7 +91,7 @@ void TCPServer::EndListen()
 {
 	// Läuft überhaupt ein Listen-Vorgang?
 	if(!_listening)
-		throw std::string("Fehler: Es ist kein Listen-Vorgang aktiv!");
+		throw THOMASException("Fehler: Es ist kein Listen-Vorgang aktiv!");
 	
 	// Listen-Vorgang abbrechen, der Thread terminiert von selbst, der aktuelle Thread wird so lange angehalten
 	_listening = false;
@@ -107,7 +107,7 @@ void TCPServer::Listen()
 	if(listen(_socket, 5) == -1)
 	{
 		// Fehler, Exception auslösen
-		throw std::string("Konnte Client-Warteschlange nicht erstellen!");
+		throw THOMASException("Konnte Client-Warteschlange nicht erstellen!");
 	}
 	
 	// Die einzelnen Client-Receive-Threads
@@ -126,7 +126,7 @@ void TCPServer::Listen()
 		if(clientSocket == -1)
 		{
 			// Fehler
-			throw std::string("Der Client konnte nicht angenommen werden!");
+			throw THOMASException("Der Client konnte nicht angenommen werden!");
 		}
 		
 		// Daten in separatem Thread empfangen
@@ -162,7 +162,7 @@ void TCPServer::ReceiveClient(int clientSocket)
 		if(dataLength == -1)
 		{
 			// Nicht gut
-			throw std::string("Fehler beim Empfangen von Client-Daten!");
+			throw THOMASException("Fehler beim Empfangen von Client-Daten!");
 		}
 		
 		// Ist die Verbindung abgebrochen?

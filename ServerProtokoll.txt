@@ -11,5 +11,5 @@ Dieses Datenübertragungsprotokoll definiert die Kommunikation zwischen Client-J
 
 => [C] Übermittlung eines Joystick-Datensatzes: JOYSTICK_DATA [vorher: JOYSTICK_HEADER]
 	=> 1. [BYTE]: = 2, Kommandobyte.
-	=> 2. [BYTE{JOYSTICK_HEADER.2}]: Einzelne Joystick-Achsenwerte.
+	=> 2. [short{JOYSTICK_HEADER.2}]: Einzelne Joystick-Achsenwerte.
 	=> 3. [BYTE{JOYSTICK_HEADER.3}]: Einzelne Joystick-Buttonwerte.

@@ -9,11 +9,11 @@
 #include "RS232.h"
 using namespace THOMAS;
 
+// THOMASException-Klasse
+#include "THOMASException.h"
+
 // C++-IO-Stream-Klasse
 #include <iostream>
-
-// C++-String-Klasse
-#include <string>
 
 // Terminal-IO-Definitionen [Non-Standard]
 // In diesem Header wird u.a. die termios-Struktur definiert.
@@ -39,7 +39,7 @@ RS232::RS232()
 	if(_handle == -1)
 	{
 		// Fehler
-		throw std::string("Fehler: Es konnte keine Verbindung zum RS232-Port hergestellt werden!");
+		throw THOMASException("Fehler: Es konnte keine Verbindung zum RS232-Port hergestellt werden!");
 	}
 	
 	// Anschluss-Flags leeren
@@ -107,7 +107,7 @@ void RS232::Send(BYTE com, BYTE *params, int paramCount)
 	if(n < (paramCount + 4))
 	{
 		// Mist
-		throw std::string("Fehler beim Senden eines Befehls!");
+		throw THOMASException("Fehler beim Senden eines Befehls!");
 	}
 	
 	// Speicher freigeben

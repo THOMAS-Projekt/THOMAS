@@ -9,8 +9,8 @@
 #include "MotorControl.h"
 using namespace THOMAS;
 
-// C++-String-Klasse
-#include <string>
+// THOMASException-Klasse
+#include "THOMASException.h"
 
 // C++-Stringstream-Klasse
 // Diese Klasse erlaubt die Verkettung von Zeichenfolgen, sie wird hier für die Erzeugung von aussagekräftigen Exeptions benötigt.
@@ -48,7 +48,7 @@ void MotorControl::Run()
 {
 	// Läuft die Steuerung schon?
 	if(_running)
-		throw std::string("Fehler: Die Motorsteuerung ist bereits aktiv!");
+		throw THOMASException("Fehler: Die Motorsteuerung ist bereits aktiv!");
 	_running = true;
 	
 	// Die Motoren sollten stehen
@@ -76,7 +76,7 @@ void MotorControl::Stop()
 {
 	// Läuft die Steuerung?
 	if(!_running)
-		throw std::string("Fehler: Die Motorsteuerung ist nicht aktiv!");
+		throw THOMASException("Fehler: Die Motorsteuerung ist nicht aktiv!");
 	_running = false;
 	
 	// Server herunterfahren
@@ -97,9 +97,44 @@ void MotorControl::ControlMotorSpeed()
 		usleep(100000);
 	
 	// Motorgeschwindigkeit kontinuierlich regeln, bis die Motorsteuerung beendet wird
+	const float joystickMaxAxis = 32768.0f; // Konstante, definiert Joystick-Maximalauslenkung
+	const float joystickScale = 255.0f; // Konstante, definiert den Wertebereich (= die Skalierung) der Motorsteuerung
+	const float joystickAxisInvConv = joystickScale / joystickMaxAxis; // Konstante, definiert den Umrechnungsfaktor auf die Motorsteuerung bezogen auf die Joystick-Maximalauslenkung
+	float corrSum; // Joystick-Korrektursumme
+	short wantedSpeed[2] = {0, 0}; // Die angestrebte Geschwindigkeit {links, rechts}
 	while(_running)
 	{
+		// Joystick-Daten sperren
+		_joystickMutex->lock();
+		{
+			// Joystick-Korrektursumme berechnen
+			corrSum = static_cast<float>(abs(_joystickAxis[0]) + abs(_joystickAxis[1]));
+			
+			// Nach Korrektursumme unterscheiden
+			if(corrSum <= joystickMaxAxis)
+			{
+				// Es muss nicht korrigiert werden, Geschwindigkeiten direkt berechnen
+				wantedSpeed[0] = static_cast<short>(joystickAxisInvConv * (_joystickAxis[0] + _joystickAxis[1]));
+				wantedSpeed[1] = static_cast<short>(joystickAxisInvConv * (_joystickAxis[1] - _joystickAxis[0]));
+			}
+			else
+			{
+				// Geschwindigkeiten berechnen, dabei korrigieren
+				wantedSpeed[0] = static_cast<short>(joystickScale * (_joystickAxis[0] + _joystickAxis[1]) / corrSum);
+				wantedSpeed[1] = static_cast<short>(joystickScale * (_joystickAxis[1] - _joystickAxis[0]) / corrSum);
+			}
+			
+			// Test-Ausgabe
+			std::ostringstream tests;
+			tests << "[" << _joystickAxis[0] << ", " << _joystickAxis[1] << "] -> [" << wantedSpeed[0] << ", " << wantedSpeed[1] << "]";
+			std::cout << tests.str() << std::endl;
+			
+			// TODO: Rotation wegen R-Achse...
+		}
+		_joystickMutex->unlock();
 		
+		// Geschwindigkeit angleichen
+		// TODO...
 		
 		// Kurz warten, um den RS232-Port nicht zu überlasten und die Motoren nicht zu stark zu beschleunigen
 		usleep(MOTOR_ACC_DELAY);
@@ -129,12 +164,14 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 				_joystickButtonCount = static_cast<int>(data[2]);
 				
 				// Empfangsarrays initialisieren
-				_joystickAxis = new BYTE[_joystickAxisCount];
+				_joystickAxis = new short[_joystickAxisCount];
 				_joystickButtons = new BYTE[_joystickButtonCount];
 				
 				// Empfangsarrays auf 0 setzen, damit keine zufälligen Befehle ausgeführt werden
-				memset(&_joystickAxis, 0, _joystickAxisCount);
-				memset(&_joystickButtons, 0, _joystickButtonCount);
+				for(int i = 0; i < _joystickAxisCount; ++i)
+					_joystickAxis[i] = 0;
+				for(int i = 0; i < _joystickButtonCount; ++i)
+					_joystickButtons[i] = 0;
 			}
 			_joystickMutex->unlock();
 			
@@ -150,16 +187,18 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 		{
 			// Wurde der Joystick-Daten-Header empfangen?
 			if(!_joystickDataOK)
-				throw std::string("Es wurde noch kein JOYSTICK_HEADER-Kommando empfangen!");
+				throw THOMASException("Es wurde noch kein JOYSTICK_HEADER-Kommando empfangen!");
 			
 			// Joystick-Daten sperren
 			_joystickMutex->lock();
 			{
 				// Achswerte kopieren
-				memcpy(_joystickAxis, data, _joystickAxisCount);
+				data++;
+				memcpy(_joystickAxis, data, sizeof(short) * _joystickAxisCount);
 				
 				// Buttonwerte kopieren
-				memcpy(_joystickButtons, data, _joystickButtonCount);
+				data += sizeof(short) * _joystickAxisCount;
+				memcpy(_joystickButtons, data, sizeof(BYTE) * _joystickButtonCount);
 			}
 			_joystickMutex->unlock();
 			
@@ -180,9 +219,6 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 
 void MotorControl::SendMotorSpeed(int motor, int speed)
 {
-	// Speed auf 255er-Werte umrechnen
-	speed = static_cast<int>(speed * 2.55);
-	
 	// Das Parameter-Array
 	BYTE params[2] = {0};
 	

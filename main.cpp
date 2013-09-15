@@ -9,9 +9,17 @@
 #include "MotorControl.h"
 using namespace THOMAS;
 
+// THOMASException-Klasse
+#include "THOMASException.h"
+
+// C++-iostream-Header
+// Enthält die wichtigen Konsolen-Ein-/Ausgabe-Streams.
+#include <iostream>
+
 // UNIX-Standard-Funktionen [Non-Standard]
 // Die sleep()-Funktion wird benötigt.
 #include <unistd.h>
+
 
 /* FUNKTIONEN */
 
