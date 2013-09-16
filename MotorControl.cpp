@@ -33,8 +33,7 @@ using namespace THOMAS;
 
 MotorControl::MotorControl()
 {
-	// Die Steuerung läuft noch nicht
-	_running = false;
+	
 }
 
 MotorControl::~MotorControl()
@@ -42,6 +41,13 @@ MotorControl::~MotorControl()
 	// Steuerung ggf. stoppen
 	if(_running)
 		Stop();
+	
+	// Joystick-Daten-Arrays vernichten
+	delete _joystickAxis;
+	delete _joystickButtons;
+	
+	// Joystick-Daten-Mutex vernichten
+	delete _joystickMutex;
 }
 
 void MotorControl::Run()
@@ -57,9 +63,6 @@ void MotorControl::Run()
 	
 	// Joystick-Mutex erstellen
 	_joystickMutex = new std::mutex();
-	
-	// Auf die Joystick-Daten muss gewartet werden
-	_joystickDataOK = false;
 	
 	// RS232-Verbindung herstellen
 	_rs232 = new RS232();
@@ -85,6 +88,7 @@ void MotorControl::Stop()
 	
 	// Motorgeschwindigkeitsanpassung beenden
 	_controlMotorSpeedThread->join();
+	delete _controlMotorSpeedThread;
 	
 	// RS232-Verbindung beenden
 	delete _rs232;
@@ -97,9 +101,6 @@ void MotorControl::ControlMotorSpeed()
 		usleep(100000);
 	
 	// Motorgeschwindigkeit kontinuierlich regeln, bis die Motorsteuerung beendet wird
-	const float joystickMaxAxis = 32768.0f; // Konstante, definiert Joystick-Maximalauslenkung
-	const float joystickScale = 255.0f; // Konstante, definiert den Wertebereich (= die Skalierung) der Motorsteuerung
-	const float joystickAxisInvConv = joystickScale / joystickMaxAxis; // Konstante, definiert den Umrechnungsfaktor auf die Motorsteuerung bezogen auf die Joystick-Maximalauslenkung
 	float corrSum; // Joystick-Korrektursumme
 	short wantedSpeed[2] = {0, 0}; // Die angestrebte Geschwindigkeit {links, rechts}
 	while(_running)
@@ -107,40 +108,76 @@ void MotorControl::ControlMotorSpeed()
 		// Joystick-Daten sperren
 		_joystickMutex->lock();
 		{
-			// Joystick-Korrektursumme berechnen
-			corrSum = static_cast<float>(abs(_joystickAxis[0]) + abs(_joystickAxis[1]));
-			
-			// Nach Korrektursumme unterscheiden
-			if(corrSum <= joystickMaxAxis)
+			// Steuerung nach X- und Z-Achse bei Joystick-Auslenkung >= 10%, Steuerung nach R-Achse bei Joystick-Auslenkung < 10%
+			if(abs(_joystickAxis[0]) >= _joystickNoPowerZone || abs(_joystickAxis[1]) >= _joystickNoPowerZone)
 			{
-				// Es muss nicht korrigiert werden, Geschwindigkeiten direkt berechnen
-				wantedSpeed[0] = static_cast<short>(joystickAxisInvConv * (_joystickAxis[0] + _joystickAxis[1]));
-				wantedSpeed[1] = static_cast<short>(joystickAxisInvConv * (_joystickAxis[1] - _joystickAxis[0]));
+				// Joystick-Korrektursumme berechnen
+				corrSum = static_cast<float>(abs(_joystickAxis[0]) + abs(_joystickAxis[1]));
+				
+				// Nach Korrektursumme unterscheiden
+				if(corrSum <= _joystickMaxAxis)
+				{
+					// Es muss nicht korrigiert werden, Geschwindigkeiten direkt berechnen
+					wantedSpeed[MLEFT_ARR] = static_cast<short>(_joystickAxisInvConv * (_joystickAxis[0] + _joystickAxis[1]));
+					wantedSpeed[MRIGHT_ARR] = static_cast<short>(_joystickAxisInvConv * (_joystickAxis[1] - _joystickAxis[0]));
+				}
+				else
+				{
+					// Geschwindigkeiten berechnen, dabei korrigieren
+					wantedSpeed[MLEFT_ARR] = static_cast<short>(_joystickScale * (_joystickAxis[0] + _joystickAxis[1]) / corrSum);
+					wantedSpeed[MRIGHT_ARR] = static_cast<short>(_joystickScale * (_joystickAxis[1] - _joystickAxis[0]) / corrSum);
+				}
 			}
-			else
+			else // Steuerung nach R-Achse
 			{
-				// Geschwindigkeiten berechnen, dabei korrigieren
-				wantedSpeed[0] = static_cast<short>(joystickScale * (_joystickAxis[0] + _joystickAxis[1]) / corrSum);
-				wantedSpeed[1] = static_cast<short>(joystickScale * (_joystickAxis[1] - _joystickAxis[0]) / corrSum);
+				// Geschwindigkeiten beider Räder berechnen (genau gleich schnell, aber entgegengesetzt => Drehung um eigene Achse)
+				wantedSpeed[MLEFT_ARR] = static_cast<short>(_joystickAxisInvConv * _joystickAxis[2]);
+				wantedSpeed[MRIGHT_ARR] = static_cast<short>(_joystickAxisInvConv * -_joystickAxis[2]);
 			}
 			
 			// Test-Ausgabe
 			std::ostringstream tests;
 			tests << "[" << _joystickAxis[0] << ", " << _joystickAxis[1] << "] -> [" << wantedSpeed[0] << ", " << wantedSpeed[1] << "]";
 			std::cout << tests.str() << std::endl;
-			
-			// TODO: Rotation wegen R-Achse...
 		}
 		_joystickMutex->unlock();
 		
-		// Geschwindigkeit angleichen
-		// TODO...
+		// Geschwindigkeitswerte angleichen: Links
+		{
+			// Würde die direkte Annahme der Wunschgeschwindigkeit in diesem Takt die Maximalbeschleunigung überschreiten?
+			if(abs(wantedSpeed[MLEFT_ARR] - _lastSpeed[MLEFT_ARR]) > _speedMaxAcc)
+			{
+				// Motor angemessen beschleunigen, auch wenn Wunschgeschwindigkeit nicht erreicht wird
+				// Der ternäre Operator ist hier die schönste und kürzeste Variante; er passt nur je nach Vorzeichen der Geschwindigkeitsdifferenz das Vorzeichen der Beschleunigung an.
+				SendMotorSpeed(MLEFT, _lastSpeed[MLEFT_ARR] + (wantedSpeed[MLEFT_ARR] > _lastSpeed[MLEFT_ARR] ? _speedMaxAcc : -_speedMaxAcc));
+			}
+			else
+			{
+				// Beschleunigung OK, direkt Wunschgeschwindigkeit annehmen
+				SendMotorSpeed(MLEFT, wantedSpeed[MLEFT_ARR]);
+			}
+		}
+		
+		// Geschwindigkeitswerte angleichen: Rechts
+		{
+			// Überschreitung der Maximalbeschleunigung?
+			if(abs(wantedSpeed[MRIGHT_ARR] - _lastSpeed[MRIGHT_ARR]) > _speedMaxAcc)
+			{
+				// Motor angemessen beschleunigen
+				SendMotorSpeed(MRIGHT, _lastSpeed[MRIGHT_ARR] + (wantedSpeed[MRIGHT_ARR] > _lastSpeed[MRIGHT_ARR] ? _speedMaxAcc : -_speedMaxAcc));
+			}
+			else
+			{
+				// Wunschgeschwindigkeit annehmen
+				SendMotorSpeed(MRIGHT, wantedSpeed[MRIGHT_ARR]);
+			}
+		}
 		
 		// Kurz warten, um den RS232-Port nicht zu überlasten und die Motoren nicht zu stark zu beschleunigen
-		usleep(MOTOR_ACC_DELAY);
+		usleep(_motorAccDelay);
 	}
 	
-	// Beide Motoren anhalten
+	// Beide Motoren direkt anhalten
 	SendMotorSpeed(MBOTH, 0);
 }
 
@@ -217,7 +254,7 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 	}
 }
 
-void MotorControl::SendMotorSpeed(int motor, int speed)
+void MotorControl::SendMotorSpeed(int motor, short speed)
 {
 	// Das Parameter-Array
 	BYTE params[2] = {0};
@@ -243,7 +280,7 @@ void MotorControl::SendMotorSpeed(int motor, int speed)
 		{
 			// Geschwindigkeit senden (ohne Vorzeichen)
 			params[0] = MRIGHT;
-			params[1] = abs(speed);
+			params[1] = static_cast<BYTE>(abs(speed));
 			_rs232->Send(2, params, 2);
 		}
 		_lastSpeed[MRIGHT_ARR] = speed;
@@ -270,7 +307,7 @@ void MotorControl::SendMotorSpeed(int motor, int speed)
 		{
 			// Geschwindigkeit senden (ohne Vorzeichen)
 			params[0] = MLEFT;
-			params[1] = abs(speed);
+			params[1] = static_cast<BYTE>(abs(speed));
 			_rs232->Send(2, params, 2);
 		}
 		_lastSpeed[MLEFT_ARR] = speed;

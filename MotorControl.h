@@ -27,12 +27,12 @@ Verzögerte Beschleunigungen werden eingesetzt, um abrupte Geschwindigkeitsände
 // Definiert den in Fahrtrichtung rechten Motor.
 // Die Array-Konstante dient der einfacheren Angabe eines Array-Elements des jeweiligen Motors.
 #define MRIGHT 1
-#define MRIGHT_ARR 0
+#define MRIGHT_ARR 1
 
 // Definiert den in Fahrtrichtung linken Motor.
 // Die Array-Konstante dient der einfacheren Angabe eines Array-Elements des jeweiligen Motors.
 #define MLEFT 2
-#define MLEFT_ARR 1
+#define MLEFT_ARR 0
 
 // Definiert beide Motoren.
 #define MBOTH 3
@@ -41,9 +41,6 @@ Verzögerte Beschleunigungen werden eingesetzt, um abrupte Geschwindigkeitsände
 #define FORWARDS 1
 #define BACKWARDS 0
 
-// Definiert die Verzögerung (in us), die zwischen zwei Motor-Geschwindigkeitsänderungsbefehlen liegen soll.
-#define MOTOR_ACC_DELAY 100000
-
 
 /* KLASSE */
 namespace THOMAS
@@ -51,8 +48,26 @@ namespace THOMAS
 	class MotorControl
 	{
 	private:
+		// Konstante, definiert die Joystick-Maximalauslenkung.
+		const float _joystickMaxAxis = 32767.0f;
+		
+		// Konstante, definiert den Wertebereich (= die Skalierung) der Motorsteuerung.
+		const float _joystickScale = 255.0f;
+		
+		// Konstante, definiert den Bereich, in dem der Joystick bewegt werden kann, ohne eine Fahrwirkung zu erzielen; in diesem Bereich wird die R-Achse berücksichtigt.
+		const float _joystickNoPowerZone = _joystickScale * 0.1f;
+		
+		// Konstante, definiert den Umrechnungsfaktor auf die Motorsteuerung bezogen auf die Joystick-Maximalauslenkung.
+		const float _joystickAxisInvConv = _joystickScale / _joystickMaxAxis;
+		
+		// Konstante, definiert die maximale Geschwindigkeitsänderung pro Motorsteuerungstakt.
+		const float _speedMaxAcc = 15.0f;
+		
+		// Konstante, definiert die Verzögerung (in us), die mindestens zwischen zwei Motorsteuerungstakten liegen muss (also auch die Minimalzeit zwischen zwei Motor-Geschwindigkeitsänderungsbefehlen).
+		const int _motorAccDelay = 100000;
+		
 		// Gibt an, ob die Steuerung aktiv ist.
-		bool _running;
+		bool _running = false;
 		
 		// Die RS232-Verbindung zur Motorsteuerung.
 		RS232 *_rs232;
@@ -66,8 +81,8 @@ namespace THOMAS
 		// Speichert die jeweils letzten gesendeten Motorgeschwindigkeiten.
 		// Hiermit werden die benötigten Drehrichtungswechsel-Befehle der Motoren realisiert.
 		// Inhalt:
-		// [0]: MRIGHT.
-		// [1]: MLEFT.
+		// [0]: MLEFT.
+		// [1]: MRIGHT.
 		int _lastSpeed[2];
 		
 		// Die Anzahl der Joystick-Achsen.
@@ -77,7 +92,7 @@ namespace THOMAS
 		int _joystickButtonCount;
 		
 		// Gibt an, ob die Joystick-Datenarrays ordnungsgemäß initialisiert worden sind.
-		bool _joystickDataOK;
+		bool _joystickDataOK = false;
 		
 		// Die letzten empfangenen Joystick-Achswerte.
 		// Vorausgesetzt:
@@ -96,7 +111,7 @@ namespace THOMAS
 		// Parameter:
 		// -> motor: Der betroffene Motor (MRIGHT, MLEFT oder MBOTH).
 		// -> speed: Die neue Motorgeschwindigkeit (-255 bis 255).
-		void SendMotorSpeed(int motor, int speed);
+		void SendMotorSpeed(int motor, short speed);
 		
 		// Verarbeitet vom Server empfangene Steuerbefehle.
 		// Parameter:

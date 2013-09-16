@@ -64,9 +64,6 @@ TCPServer::TCPServer(unsigned short port, ComputeReceivedDataFunction computeRec
 		// Ein Fehler ist aufgetreten, Exception auslösen
 		throw THOMASException("Beim Binden des Server-Sockets ist ein Fehler aufgetreten!");
 	}
-	
-	// Noch läuft kein Listen-Vorgang
-	_listening = false;
 }
 
 TCPServer::~TCPServer()

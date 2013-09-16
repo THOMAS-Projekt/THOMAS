@@ -35,7 +35,7 @@ namespace THOMAS
 		int _socket;
 		
 		// Gibt an, ob der Listen-Vorgang läuft.
-		bool _listening;
+		bool _listening = false;
 		
 		// Der interne Listen()-Thread.
 		std::thread *_listenThread;
