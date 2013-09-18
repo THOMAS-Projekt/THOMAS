@@ -28,7 +28,7 @@ using namespace THOMAS;
 // Hier wird die usleep()-Funktion benötigt.
 #include <unistd.h>
 
-#include <iostream>
+
 /* FUNKTIONEN */
 
 MotorControl::MotorControl()
@@ -134,11 +134,6 @@ void MotorControl::ControlMotorSpeed()
 				wantedSpeed[MLEFT_ARR] = static_cast<short>(_joystickAxisInvConv * _joystickAxis[2]);
 				wantedSpeed[MRIGHT_ARR] = static_cast<short>(_joystickAxisInvConv * -_joystickAxis[2]);
 			}
-			
-			// Test-Ausgabe
-			std::ostringstream tests;
-			tests << "[" << _joystickAxis[0] << ", " << _joystickAxis[1] << "] -> [" << wantedSpeed[0] << ", " << wantedSpeed[1] << "]";
-			std::cout << tests.str() << std::endl;
 		}
 		_joystickMutex->unlock();
 		
@@ -183,10 +178,6 @@ void MotorControl::ControlMotorSpeed()
 
 void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 {
-	for(int i = 0; i < dataLength; i++)
-		std::cout << data[i] << " ";
-	std::cout << std::endl;
-	
 	// Kommandobyte prüfen
 	switch(data[0])
 	{
@@ -249,7 +240,7 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 			// Fehler
 			std::ostringstream err;
 			err << "Fehler: Das erhaltene Kommandobyte (" << data[0] << ") ist ungueltig!";
-			throw err.str();
+			throw THOMASException(err.str());
 		}
 	}
 }
