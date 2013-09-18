@@ -221,12 +221,10 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 			_joystickMutex->lock();
 			{
 				// Achswerte kopieren
-				data++;
-				memcpy(_joystickAxis, data, sizeof(short) * _joystickAxisCount);
+				memcpy(_joystickAxis, &data[1], sizeof(short) * _joystickAxisCount);
 				
 				// Buttonwerte kopieren
-				data += sizeof(short) * _joystickAxisCount;
-				memcpy(_joystickButtons, data, sizeof(BYTE) * _joystickButtonCount);
+				memcpy(_joystickButtons, &data[1 + sizeof(short) * _joystickAxisCount], sizeof(BYTE) * _joystickButtonCount);
 			}
 			_joystickMutex->unlock();
 			
