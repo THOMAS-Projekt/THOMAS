@@ -34,4 +34,7 @@ int main(int argc, char **argv)
 	// TODO: Programm-Befehle per Tastatur etc.
 	while(true)
 		sleep(2);
+	
+	// Programm erfolgreich beendet
+	return 0;
 }

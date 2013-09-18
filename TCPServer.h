@@ -47,7 +47,6 @@ namespace THOMAS
 		void *_cRDFParams;
 		
 		// Wartet auf ankommende Clienten und empfängt dann deren Daten.
-		// Parameter: Werden ignoriert.
 		void Listen();
 		
 		// Wrapper, um die Listen-Memberfunktion sauber an einen separaten Thread zu übergeben. Wird nur von BeginListen() benutzt.

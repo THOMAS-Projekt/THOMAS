@@ -121,6 +121,8 @@ namespace THOMAS
 		
 		// Wrapper, um die ComputeClientCommand-Memberfunktion sauber an den TCP-Server zu übergeben.
 		// Parameter:
+		// -> data: Die vom Server empfangenen Daten.
+		// -> dataLength: Die Länge der vom Server empfangenen Daten.
 		// -> obj: Das zur ComputeClientCommand-Funktion gehörende MotorControl-Objekt.
 		static void ComputeClientCommandWrapper(BYTE *data, int dataLength, void *obj)
 		{
