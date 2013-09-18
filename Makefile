@@ -1,16 +1,29 @@
-ARGS= -std=c99 -pthread
+CPPARGS= -std=c++11 -pthread
+LINKERARGS= -pthread
 
-all: socket.o rs232.o main.o
-	gcc socket.o rs232.o main.o -o thomas ${ARGS}
-	
-main.o: main.c
-	gcc -c main.c ${ARGS}
-	
-socket.o: socket.c
-	gcc -c socket.c ${ARGS}
-	
-rs232.o: rs232.c
-	gcc -c rs232.c ${ARGS}
-	
+all: main.o RS232.o TCPServer.o MotorControl.o THOMASException.o
+	g++ THOMASException.o RS232.o TCPServer.o MotorControl.o main.o -o thomas $(LINKERARGS)
+
+test: test.o TCPServer.o
+	g++ TCPServer.o test.o -o test $(LINKERARGS)
+
+test.o: test.cpp
+	g++ -c test.cpp $(CPPARGS)
+
+main.o: main.cpp
+	g++ -c main.cpp $(CPPARGS)
+
+RS232.o: RS232.cpp RS232.h
+	g++ -c RS232.cpp $(CPPARGS)
+
+TCPServer.o: TCPServer.cpp TCPServer.h
+	g++ -c TCPServer.cpp $(CPPARGS)
+
+MotorControl.o: MotorControl.cpp MotorControl.h
+	g++ -c MotorControl.cpp $(CPPARGS)
+
+THOMASException.o: THOMASException.cpp THOMASException.h
+	g++ -c THOMASException.cpp $(CPPARGS)
+
 clean:
-	rm -rf ./*.o thomas
+	rm -rf ./*.o thomas test
