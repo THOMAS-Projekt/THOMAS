@@ -1,74 +1,74 @@
-// **********THOMAS-Objektverfolgung**********
-// Von Marcus Wichelmann
-// Version 1.0
-// Vom 03.09.2013
-// Dieses Programm ist vollständig für das Terminal ausgelegt und sollte auch ohne GUI funktionieren.
-// WICHTIG: Zum Ausführen dieses Programmes wird eine Webcam und OpenCV2 benötigt.
-// *******************************************
+/*
+-- TRACKING-KLASSE :: IMPLEMENTIERUNG --
+*/
 
-// Standardimports
-#include <stdlib.h>
 
-// Import von OpenCV
+/* INCLUDES */
+
+// Klassenheader
+#include "tracking.h"
+using namespace THOMAS;
+
+// THOMASException-Klasse
+#include "THOMASException.h"
+
+// C++-Stringstream-Klasse
+// Diese Klasse erlaubt die Verkettung von Zeichenfolgen, sie wird hier für die Erzeugung von aussagekräftigen Exeptions benötigt.
+#include <sstream>
+
+// C-Standardbibliothek
+#include <cstdlib>
+
+// OpenCV
 #include <opencv2/opencv.hpp>
 
-// Oft verwendete Klassen
-using namespace std;
-using namespace cv;
+/* FUNKTIONEN */
 
-// Haarcascade waehlen
-String hcc = "haarcascade.xml";
-
-// Detektor
-CascadeClassifier detector;
-
-// Hauptfunktion
-int main()
+Tracking::Tracking()
 {
-    // Konsole leeren   
-    system("clear");
-
-    // Mit der Kamera verbinden
-    VideoCapture cap(0);
-
-    // Variablen für die Bilder in Graustufen und in RGB
-    Mat camFrames, grayFrames;
-
-    // Rechtecke für die erkannten Objekte
-    vector<Rect> objects;
-
-    // Haarcascade laden
+	// Haarcascade laden
     detector.load(hcc);
-   
-    // Endlosschleife starten, die ständig Bilder von der Kamera abruft und analysiert
-    while (1)
-    {
-        // Bild aufnehmen
-        cap >> camFrames;
+	
+	// Framebreite abrufen (CV_CAP_PROP_FRAME_WIDTH)
+	camwidth = cap.get(3);
+	
+	// Framebreite gültig? (So wird das Teilen durch 0 verhindert)
+	if (camwidth <= 0)
+	{
+		// Fehler
+		throw THOMASException("Fehler: Die Breite des Kameraframes ist ungültig!");
+	}
+}
 
-        // Bild in Graustufen konvertieren
-        cvtColor(camFrames, grayFrames, CV_BGR2GRAY);
+Tracking::~Tracking()
+{	
+	// Daten-Arrays vernichten
+	delete objects;
+}
 
-        // Bildkontrast des grauen Bildes erhöhen
-        equalizeHist(grayFrames, grayFrames);
+int Tracking::get_objectposition()
+{
+	// Bild aufnehmen
+    cap >> camFrames;
 
-        // Bild nach Objekten durchsuchen und in Array laden
-        detector.detectMultiScale(grayFrames, objects, 1.1, 2, 0, Size(80, 80));
+    // Bild in Graustufen konvertieren
+    cvtColor(camFrames, grayFrames, CV_BGR2GRAY);
+
+    // Bildkontrast des grauen Bildes erhöhen
+    equalizeHist(grayFrames, grayFrames);
+
+    // Bild nach Objekten durchsuchen und in Array laden
+    detector.detectMultiScale(grayFrames, objects, 1.1, 2, 0, Size(accuracy, accuracy));
        
-        // Genau ein Objekt gefunden?
-        if (objects.size() == 1)
-        {       
-            // Mittelpunkt des erkannten Objektes:
-            Point center(objects[0].x + objects[0].width * 0.5, objects[0].y + objects[0].height * 0.5);
-
-            // Hier kann die Position des Objektes weiterverarbeitet und so der Roboter gesteuert werden.
-            // ..........
-			
-			// Info-Meldung ausgeben
-			cout << "Ein Objekt gefunden!" << endl;
-        }
-
-        // Frame speichern
-        imwrite("image.jpg", camFrames);
+    // Genau ein Objekt gefunden?
+    if (objects.size() == 1)
+	{       
+        // Unterschied errechnen und zurückgeben (Objektmitte - Bildmitte): kleiner 0 => links, 0 => mitte, größer 0 => rechts (-100 bis 100)
+		return ((camwidth / 2) - (objects[0].x + objects[0].width * 0.5)) * 200 / camwidth;
     }
+	else
+	{
+		// Kein Objekt gefunden => 200 zurückgeben
+		return 200;
+	}
 }

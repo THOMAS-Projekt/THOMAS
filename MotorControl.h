@@ -78,6 +78,9 @@ namespace THOMAS
 		// Der Motorgeschwindigkeits-Anpassungs-Thread.
 		std::thread *_controlMotorSpeedThread;
 		
+		// Gibt an, ob der Roboter über den Joystick, oder über die Kamera gesteuert wird.
+		bool ctrlbycam = false;
+		
 		// Speichert die jeweils letzten gesendeten Motorgeschwindigkeiten.
 		// Hiermit werden die benötigten Drehrichtungswechsel-Befehle der Motoren realisiert.
 		// Inhalt:
