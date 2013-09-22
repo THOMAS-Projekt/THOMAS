@@ -12,6 +12,9 @@ using namespace THOMAS;
 // THOMASException-Klasse
 #include "THOMASException.h"
 
+// Tracking-Klasse
+#include "Tracking.h"
+
 // C++-Stringstream-Klasse
 // Diese Klasse erlaubt die Verkettung von Zeichenfolgen, sie wird hier für die Erzeugung von aussagekräftigen Exeptions benötigt.
 #include <sstream>
@@ -28,8 +31,6 @@ using namespace THOMAS;
 // Hier wird die usleep()-Funktion benötigt.
 #include <unistd.h>
 
-// Tracking-Klasse
-#include "Tracking.cpp"
 
 /* FUNKTIONEN */
 
@@ -102,40 +103,45 @@ void MotorControl::ControlMotorSpeed()
 	while(!_joystickDataOK)
 		usleep(100000);
 	
+	// Das Tracking-Objekt zur Kamerasteuerung
+	Tracking *tracker;
+	
 	// Motorgeschwindigkeit kontinuierlich regeln, bis die Motorsteuerung beendet wird
 	float corrSum; // Joystick-Korrektursumme
 	short wantedSpeed[2] = {0, 0}; // Die angestrebte Geschwindigkeit {links, rechts}
-	int relobjpos; // Relative Objektposition auf dem Kamerabild
+	int relObjPos; // Relative Objektposition auf dem Kamerabild
 	while(_running)
 	{
 		// Joystick-Daten sperren
 		_joystickMutex->lock();
 		{
 			// Wahl zwischen Joystick und Kamera per A-Taste auf dem Joystick
-			if (_joystickButtons[0] > 0)
+			if(_joystickButtons[0] > 0)
 			{
-				// umschalten
-				if (ctrlbycam == false)
+				// Umschalten, Tracker-Objekt erzeugen/vernichten
+				if(!_ctrlByCam)
 				{
-					ctrlbycam = true;
+					_ctrlByCam = true;
+					tracker = new Tracking();
 				}
 				else
 				{
-					ctrlbycam = false;
+					_ctrlByCam = false;
+					delete tracker;
 				}
 			}
 			
 			// Roboter per Joystick, oder per Kamera steuern?
-			if (ctrlbycam == true)
+			if(_ctrlByCam)
 			{
 				// Objektposition abrufen
-				relobjpos = Tracking::get_objectposition();
+				relObjPos = tracker->GetObjectPosition();
 				
-				// Objekt gefunden? Falls nicht wird die alte Geschwindigkeit einfach beibehalten.
-				if (relobjpos <= 100)
+				// Objekt gefunden? Falls nicht wird die alte Geschwindigkeit einfach beibehalten
+				if(relObjPos <= 100)
 				{
-					wantedSpeed[MLEFT_ARR] = relobjpos;
-					wantedSpeed[MRIGHT_ARR] = relobjpos  * (-1);
+					wantedSpeed[MLEFT_ARR] = relObjPos;
+					wantedSpeed[MRIGHT_ARR] = -relObjPos;
 				}
 			}
 			else

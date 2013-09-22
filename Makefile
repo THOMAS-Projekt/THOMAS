@@ -1,7 +1,7 @@
 CPPARGS= -std=c++11 -pthread
 LINKERARGS= -pthread
 
-all: main.o RS232.o TCPServer.o MotorControl.o THOMASException.o
+all: main.o RS232.o TCPServer.o MotorControl.o THOMASException.o Tracking.o
 	g++ THOMASException.o RS232.o TCPServer.o MotorControl.o main.o -o thomas $(LINKERARGS)
 
 test: test.o TCPServer.o
@@ -21,6 +21,9 @@ TCPServer.o: TCPServer.cpp TCPServer.h
 
 MotorControl.o: MotorControl.cpp MotorControl.h
 	g++ -c MotorControl.cpp $(CPPARGS)
+
+Tracking.o: Tracking.cpp Tracking.h
+	g++ -c Tracking.cpp $(CPPARGS)
 
 THOMASException.o: THOMASException.cpp THOMASException.h
 	g++ -c THOMASException.cpp $(CPPARGS)

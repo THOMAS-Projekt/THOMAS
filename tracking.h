@@ -1,13 +1,19 @@
-#pragma once
+ï»¿#pragma once
 /*
 -- TRACKING-KLASSE :: HEADER --
 Definiert die Tracking-Klasse.
-Diese Klasse ist für das Abrufen und analysieren des aktuellen Kamera-Bildes zuständig.
-Es wird eine Webcam und OpenCV benötigt. Die Klasse funktioniert nur unter Verwendung von sudo-Rechten.
+Diese Klasse ist fÃ¼r das Abrufen und analysieren des aktuellen Kamera-Bildes zustÃ¤ndig.
+Es wird eine Webcam und OpenCV benÃ¶tigt. Die Klasse funktioniert nur unter Verwendung von sudo-Rechten.
 */
 
 
 /* INCLUDES */
+
+// C++-string-Klasse
+#include <string>
+
+// OpenCV
+#include <opencv2/opencv.hpp>
 
 
 /* KONSTANTEN */
@@ -19,26 +25,26 @@ namespace THOMAS
 	class Tracking
 	{
 	private:
-		// Konstante, den Pfad zur Haarcascade
-		const String hcc = "haarcascade.xml";
+		// Konstante, der Pfad zur Haarcascade.
+		const std::string _hcc = "haarcascade.xml";
 		
-		// Konstante, die genauigkeit der Grafikanalyse (Je größer, desto genauer und langsamer)
-		const int accuracy = 80;
+		// Konstante, die Genauigkeit der Grafikanalyse (je grÃ¶ÃŸer, desto genauer und langsamer).
+		const int _accuracy = 80;
 		
-		// Detektor
-		CascadeClassifier *detector;
-	
-		// Mit der Kamera verbinden
-		VideoCapture cap(0);
-
-		// Variablen für die Bilder in Graustufen und in RGB
-		Mat camFrames, grayFrames;
-
-		// Array für die Rechtecke für die erkannten Objekte
-		vector<Rect> objects;
+		// Der Detektor.
+		CascadeClassifier *_detector;
 		
-		// Breite des Kamerabildes
-		int camwidth = 0;
+		// Die Kameraverbindung.
+		VideoCapture *_cap;
+		
+		// Variablen fÃ¼r die Bilder in Graustufen und in RGB.
+		Mat _camFrames, _grayFrames;
+		
+		// Array fÃ¼r die Rechtecke fÃ¼r die erkannten Objekte.
+		vector<Rect> _objects;
+		
+		// Die Breite des Kamerabildes.
+		int _camWidth = 0;
 		
 	public:
 		// Konstruktor.
@@ -50,7 +56,7 @@ namespace THOMAS
 		~Tracking();
 		
 		// Startet die ruft die horizontale Objektposition im Bild ab (Objektmitte - Bildmitte)
-		int get_objectposition();
+		int GetObjectPosition();
 		
 	};
 }
