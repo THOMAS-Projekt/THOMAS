@@ -137,11 +137,17 @@ void MotorControl::ControlMotorSpeed()
 				// Objektposition abrufen
 				relObjPos = tracker->GetObjectPosition();
 				
-				// Objekt gefunden? Falls nicht wird die alte Geschwindigkeit einfach beibehalten
-				if(relObjPos <= 100)
+				// Objekt gefunden?
+				if(relObjPos == 1000)
 				{
-					wantedSpeed[MLEFT_ARR] = relObjPos;
-					wantedSpeed[MRIGHT_ARR] = -relObjPos;
+					// Keines oder mehrere Objekte gefunden => Suchen
+					wantedSpeed[MLEFT_ARR] = -255;
+					wantedSpeed[MRIGHT_ARR] = 255;
+				}
+				else
+				{
+					wantedSpeed[MLEFT_ARR] = 155 + relObjPos;
+					wantedSpeed[MRIGHT_ARR] = 155 - relObjPos;
 				}
 			}
 			else

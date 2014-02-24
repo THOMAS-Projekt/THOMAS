@@ -46,6 +46,9 @@ namespace THOMAS
 		// Die Breite des Kamerabildes.
 		int _camWidth = 0;
 		
+		// Die horizontale Position des Objektes
+		int _horizontalPos = 0;
+		
 	public:
 		// Konstruktor.
 		// Erstellt eine neue Instanz der Tracking-Klasse.
@@ -55,8 +58,7 @@ namespace THOMAS
 		// Gibt den belegten Speicher frei
 		~Tracking();
 		
-		// Startet die ruft die horizontale Objektposition im Bild ab (Objektmitte - Bildmitte)
+		// Startet die Kameraabfrage und ruft die horizontale Objektposition im Bild ab (Bereich: -100(links) bis 100(rechts))
 		int GetObjectPosition();
-		
 	};
 }

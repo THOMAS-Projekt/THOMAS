@@ -67,11 +67,28 @@ int Tracking::GetObjectPosition()
     if(_objects.size() == 1)
 	{       
         // Unterschied errechnen und zurückgeben (Objektmitte - Bildmitte): kleiner 0 => links, 0 => mitte, größer 0 => rechts (-100 bis 100)
-		return ((_camWidth / 2) - (_objects[0].x + _objects[0].width * 0.5)) * 200 / _camWidth;
+		_horizontalPos = 100 - (((_camWidth / 2) - (_objects[0].x + _objects[0].width * 0.5)) * 400 / _camWidth);
+		
+		// Wertüberschreitungen vermeiden
+		if(_horizontalPos > 100)
+		{
+			// Wert größer als 100 => 100
+			_horizontalPos = 100;
+		}
+		else
+		{
+			if(_horizontalPos < -100)
+			{
+				// Wert kleiner als -100 => -100
+				_horizontalPos = -100;
+			}
+		}
+		
+		return _horizontalPos;
     }
 	else
 	{
-		// Kein Objekt gefunden => 200 zurückgeben
-		return 200;
+		// Kein Objekt gefunden => 1000 zurückgeben
+		return 1000;
 	}
 }
