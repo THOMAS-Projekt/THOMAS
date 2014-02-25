@@ -13,7 +13,7 @@ Es wird eine Webcam und OpenCV benötigt. Die Klasse funktioniert nur unter Verw
 #include <string>
 
 // OpenCV
-#include <opencv2/opencv.hpp>
+#include <cv.h>
 
 
 /* KONSTANTEN */
