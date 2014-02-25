@@ -4,31 +4,31 @@ LIBS= `pkg-config --libs opencv`
 LINKERARGS= -pthread
 
 all: main.o RS232.o TCPServer.o MotorControl.o THOMASException.o Tracking.o
-	g++ THOMASException.o RS232.o TCPServer.o MotorControl.o main.o -o thomas-server $(LINKERARGS)
+	g++ THOMASException.o RS232.o TCPServer.o MotorControl.o main.o -o thomas-server $(LINKERARGS) $(LIBS)
 
 test: test.o TCPServer.o
-	g++ TCPServer.o test.o -o test-server $(LINKERARGS)
+	g++ TCPServer.o test.o -o test-server $(LINKERARGS) $(LIBS)
 
 test.o: test.cpp
-	g++ $(CFLAGS) $(LIBS) -c test.cpp $(CPPARGS)
+	g++ -c test.cpp $(CPPARGS) $(CFLAGS)
 
 main.o: main.cpp
-	g++ $(CFLAGS) $(LIBS) -c main.cpp $(CPPARGS)
+	g++ -c main.cpp $(CPPARGS) $(CFLAGS)
 
 RS232.o: RS232.cpp RS232.h
-	g++ $(CFLAGS) $(LIBS) -c RS232.cpp $(CPPARGS)
+	g++ -c RS232.cpp $(CPPARGS) $(CFLAGS)
 
 TCPServer.o: TCPServer.cpp TCPServer.h
-	g++ $(CFLAGS) $(LIBS) -c TCPServer.cpp $(CPPARGS)
+	g++ -c TCPServer.cpp $(CPPARGS) $(CFLAGS)
 
 MotorControl.o: MotorControl.cpp MotorControl.h
-	g++ $(CFLAGS) $(LIBS) -c MotorControl.cpp $(CPPARGS)
+	g++ -c MotorControl.cpp $(CPPARGS) $(CFLAGS)
 
 Tracking.o: Tracking.cpp Tracking.h
-	g++ $(CFLAGS) $(LIBS) -c Tracking.cpp $(CPPARGS)
+	g++ -c Tracking.cpp $(CPPARGS) $(CFLAGS)
 
 THOMASException.o: THOMASException.cpp THOMASException.h
-	g++ $(CFLAGS) $(LIBS) -c THOMASException.cpp $(CPPARGS)
+	g++ -c THOMASException.cpp $(CPPARGS) $(CFLAGS)
 
 clean:
 	rm -rf ./*.o thomas test
