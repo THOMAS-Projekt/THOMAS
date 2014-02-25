@@ -3,7 +3,7 @@ CFLAGS= `pkg-config --cflags opencv`
 LIBS= `pkg-config --libs opencv`
 LINKERARGS= -pthread
 
-all: main.o RS232.o TCPServer.o MotorControl.o THOMASException.o Tracking.o
+all: main.o RS232.o TCPServer.o MotorControl.o THOMASException.o tracking.o
 	g++ THOMASException.o RS232.o TCPServer.o MotorControl.o main.o -o thomas-server $(LINKERARGS) $(LIBS)
 
 test: test.o TCPServer.o
@@ -24,8 +24,8 @@ TCPServer.o: TCPServer.cpp TCPServer.h
 MotorControl.o: MotorControl.cpp MotorControl.h
 	g++ -c MotorControl.cpp $(CPPARGS) $(CFLAGS)
 
-Tracking.o: Tracking.cpp Tracking.h
-	g++ -c Tracking.cpp $(CPPARGS) $(CFLAGS)
+tracking.o: tracking.cpp tracking.h
+	g++ -c tracking.cpp $(CPPARGS) $(CFLAGS)
 
 THOMASException.o: THOMASException.cpp THOMASException.h
 	g++ -c THOMASException.cpp $(CPPARGS) $(CFLAGS)
