@@ -131,8 +131,9 @@ void MotorControl::ControlMotorSpeed()
 			else // Steuerung nach R-Achse
 			{
 				// Geschwindigkeiten beider Räder berechnen (genau gleich schnell, aber entgegengesetzt => Drehung um eigene Achse)
-				wantedSpeed[MLEFT_ARR] = static_cast<short>(_joystickAxisInvConv * _joystickAxis[2]);
-				wantedSpeed[MRIGHT_ARR] = static_cast<short>(_joystickAxisInvConv * -_joystickAxis[2]);
+				// Negation, da Motoren sonst falschherum drehen
+				wantedSpeed[MLEFT_ARR] = -static_cast<short>(_joystickAxisInvConv * _joystickAxis[2]);
+				wantedSpeed[MRIGHT_ARR] = -static_cast<short>(_joystickAxisInvConv * -_joystickAxis[2]);
 			}
 		}
 		_joystickMutex->unlock();
@@ -245,6 +246,9 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 
 void MotorControl::SendMotorSpeed(int motor, short speed)
 {
+	// Geschwindigkeit negieren (Motoren drehen sonst falschherum...)
+	speed = -speed;
+	
 	// Das Parameter-Array
 	BYTE params[2] = {0};
 	
