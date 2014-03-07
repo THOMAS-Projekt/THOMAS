@@ -249,7 +249,7 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 	BYTE params[2] = {0};
 	
 	// Rechter Motor oder beide Motoren?
-	if(motor & MRIGHT == MRIGHT)
+	if((motor & MRIGHT) == MRIGHT)
 	{
 		// Neue Rotation? Rotation bestimmen
 		if(_lastSpeed[MRIGHT_ARR] <= 0 && speed > 0)
@@ -276,7 +276,7 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 	}
 	
 	// Linker Motor oder beide Motoren?
-	if(motor & MLEFT == MLEFT)
+	if((motor & MLEFT) == MLEFT)
 	{
 		// Neue Rotation? Rotation bestimmen
 		if(_lastSpeed[MLEFT_ARR] <= 0 && speed > 0)
