@@ -1,5 +1,5 @@
 ﻿-- THOMAS-SERVER-PROTOKOLL --
-Dieses Datenübertragungsprotokoll definiert die Kommunikation zwischen Client-Joystick und dem Server.
+Dieses Datenübertragungsprotokoll definiert die Kommunikation zwischen Client-Joystick [C] und dem Server [S].
 
 
 ~ Kommunikation:
