@@ -118,14 +118,14 @@ void MotorControl::ControlMotorSpeed()
 				if(corrSum <= _joystickMaxAxis)
 				{
 					// Es muss nicht korrigiert werden, Geschwindigkeiten direkt berechnen
-					wantedSpeed[MLEFT_ARR] = static_cast<short>(_joystickAxisInvConv * (-_joystickAxis[0] + _joystickAxis[1]));
-					wantedSpeed[MRIGHT_ARR] = static_cast<short>(_joystickAxisInvConv * (_joystickAxis[1] + _joystickAxis[0]));
+					wantedSpeed[MLEFT_ARR] = -static_cast<short>(_joystickAxisInvConv * (-_joystickAxis[0] + _joystickAxis[1]));
+					wantedSpeed[MRIGHT_ARR] = -static_cast<short>(_joystickAxisInvConv * (_joystickAxis[1] + _joystickAxis[0]));
 				}
 				else
 				{
 					// Geschwindigkeiten berechnen, dabei korrigieren
-					wantedSpeed[MLEFT_ARR] = static_cast<short>(_joystickScale * (-_joystickAxis[0] + _joystickAxis[1]) / corrSum);
-					wantedSpeed[MRIGHT_ARR] = static_cast<short>(_joystickScale * (_joystickAxis[1] + _joystickAxis[0]) / corrSum);
+					wantedSpeed[MLEFT_ARR] = -static_cast<short>(_joystickScale * (-_joystickAxis[0] + _joystickAxis[1]) / corrSum);
+					wantedSpeed[MRIGHT_ARR] = -static_cast<short>(_joystickScale * (_joystickAxis[1] + _joystickAxis[0]) / corrSum);
 				}
 			}
 			else // Steuerung nach R-Achse
