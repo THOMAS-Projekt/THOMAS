@@ -13,7 +13,7 @@ using namespace THOMAS;
 #include "THOMASException.h"
 
 // Tracking-Klasse
-#include "tracking.h"
+#include "Tracking.h"
 
 // C++-Stringstream-Klasse
 // Diese Klasse erlaubt die Verkettung von Zeichenfolgen, sie wird hier für die Erzeugung von aussagekräftigen Exeptions benötigt.

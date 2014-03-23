@@ -2,7 +2,7 @@
 /*
 -- TRACKING-KLASSE :: HEADER --
 Definiert die Tracking-Klasse.
-Diese Klasse ist für das Abrufen und analysieren des aktuellen Kamera-Bildes zuständig.
+Diese Klasse ist für das Abrufen und Analysieren des aktuellen Kamera-Bildes zuständig.
 Es wird eine Webcam und OpenCV benötigt. Die Klasse funktioniert nur unter Verwendung von sudo-Rechten.
 */
 
@@ -55,7 +55,7 @@ namespace THOMAS
 		Tracking();
 		
 		// Destruktor.
-		// Gibt den belegten Speicher frei
+		// Gibt den belegten Speicher frei.
 		~Tracking();
 		
 		// Startet die Kameraabfrage und ruft die horizontale Objektposition im Bild ab (Bereich: -100(links) bis 100(rechts))
