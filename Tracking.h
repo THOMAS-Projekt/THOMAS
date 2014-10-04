@@ -48,7 +48,7 @@ namespace THOMAS
 		
 		// Die horizontale Position des Objektes
 		int _horizontalPos = 0;
-		
+
 	public:
 		// Konstruktor.
 		// Erstellt eine neue Instanz der Tracking-Klasse.
