@@ -158,6 +158,9 @@ void TCPServer::ReceiveClient(int clientSocket)
 		// Ist ein Fehler aufgetreten?
 		if(dataLength == -1)
 		{
+			// Fehlermeldung ausgeben
+			perror ("Fehler");
+			
 			// Nicht gut
 			throw THOMASException("Fehler beim Empfangen von Client-Daten!");
 		}
