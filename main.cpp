@@ -29,12 +29,12 @@ int main(int argc, char **argv)
 	// Motorsteuerung starten
 	MotorControl *motorControl = new MotorControl();
 	motorControl->Run();
-	
+
 	// Programm laufen lassen, Prozessor nicht unnötig belasten (alles läuft in separaten Threads)
 	// TODO: Programm-Befehle per Tastatur etc.
 	while(true)
 		sleep(2);
-	
+
 	// Programm erfolgreich beendet
 	return 0;
 }

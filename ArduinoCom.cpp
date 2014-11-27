@@ -1,12 +1,12 @@
 ﻿/*
--- RS232-KLASSE :: IMPLEMENTIERUNG --
+-- ArduinoCom-KLASSE :: IMPLEMENTIERUNG --
 */
 
 
 /* INCLUDES */
 
 // Klassenheader
-#include "RS232.h"
+#include "ArduinoCom.h"
 using namespace THOMAS;
 
 // THOMASException-Klasse
@@ -30,16 +30,15 @@ using namespace THOMAS;
 
 /* FUNKTIONEN */
 
-RS232::RS232()
+ArduinoCom::ArduinoCom()
 {
-	// Anschlusshandle erstellen, RS232-Anschluss (ttyS0) laden
-	_handle = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NDELAY);
+	// Anschlusshandle erstellen, RS232-Anschluss (ttyACM0) laden
+	_handle = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_NDELAY);
 
 	// Fehler abfangen
-	if(_handle == -1)
-	{
+	if(_handle == -1) {
 		// Fehler
-		throw THOMASException("Fehler: Es konnte keine Verbindung zum RS232-Port hergestellt werden!");
+		throw THOMASException("Fehler: Es konnte keine Verbindung zum Arduino hergestellt werden!");
 	}
 
 	// Anschluss-Flags leeren
@@ -51,7 +50,7 @@ RS232::RS232()
 	// Aktuelle Anschluss-Optionen abrufen
 	tcgetattr(_handle, &fOpt);
 
-	// Baudrate setzen (9600); TODO: Zu Testzwecken auf 1200
+	// Baudrate setzen (9600);
 	cfsetispeed(&fOpt, B9600); // Input
 	cfsetospeed(&fOpt, B9600); // Output
 
@@ -72,39 +71,32 @@ RS232::RS232()
 	tcsetattr(_handle, TCSANOW, &fOpt);
 }
 
-RS232::~RS232()
+ArduinoCom::~ArduinoCom()
 {
-	// Verbindung schliessen
+	// Verbindung schließen
 	close(_handle);
 }
 
-void RS232::Send(BYTE com, BYTE *params, int paramCount)
+void ArduinoCom::Send(BYTE com, BYTE *params, int paramCount)
 {
-	// Befehlsarray erstellen (3 Sonderbytes + Kommandobyte + Parameter)
-	BYTE *data = new BYTE[4 + paramCount];
-	
-	// Die beiden Steuerbytes setzen
-	data[0] = 35;
-	data[1] = 35;
+	// Befehlsarray erstellen (1 Kommandobyte + Parameter)
+	BYTE *data = new BYTE[1 + paramCount];
 
-	// Laengenbyte setzen
-	data[2] = (paramCount + 1);
-
-	// Kommandobyte setzen
-	data[3] = com;
+	// Das Anfrage Byte an erste stelle setzten
+	data[0] = com;
 
 	// Parameterbytes zuweisen
 	int i;
 	for(i = 0; i < paramCount; i++)
 	{
-		data[i + 4] = params[i];
+		data[i + 1] = params[i];
 	}
 
 	// Anzahl der gesendeten Daten merken
-	int n = write(_handle, data, paramCount + 4);
+	int n = write(_handle, data, paramCount + 1);
 
 	// Anzahl der gesendeten Daten pruefen
-	if(n < (paramCount + 4))
+	if(n < (paramCount + 1))
 	{
 		// Mist
 		throw THOMASException("Fehler beim Senden eines Befehls!");

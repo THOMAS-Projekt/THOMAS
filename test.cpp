@@ -12,8 +12,8 @@ int main()
 {
 	THOMAS::TCPServer *s = new THOMAS::TCPServer(12345, compute);
 	s->BeginListen();
-	
+
 	while(true);
-	
+
 	return 0;
 }

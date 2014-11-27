@@ -20,7 +20,7 @@ THOMASException::THOMASException(std::string message)
 {
 	// Fehlernachricht speichern
 	_message = message;
-	
+
 	// Fehlernachricht ausgeben
 	std::cout << "THOMASException: " << message << std::endl;
 }
