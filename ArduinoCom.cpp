@@ -33,7 +33,7 @@ using namespace THOMAS;
 ArduinoCom::ArduinoCom()
 {
 	// Anschlusshandle erstellen, RS232-Anschluss (ttyACM0) laden
-	_handle = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_NDELAY);
+	_handle = open("/dev/urandom", O_RDWR | O_NOCTTY | O_NDELAY);
 
 	// Fehler abfangen
 	if(_handle == -1) {
@@ -69,6 +69,10 @@ ArduinoCom::ArduinoCom()
 
 	// Neue Port-Optionen einsetzen
 	tcsetattr(_handle, TCSANOW, &fOpt);
+
+	// Test Send Function
+	//BYTE params[10] = {2,3,4,5};
+	Receive();
 }
 
 ArduinoCom::~ArduinoCom()
@@ -77,26 +81,24 @@ ArduinoCom::~ArduinoCom()
 	close(_handle);
 }
 
-void ArduinoCom::Send(BYTE com, BYTE *params, int paramCount)
+void ArduinoCom::Send(BYTE *package, int paramCount)
 {
-	// Befehlsarray erstellen (1 Kommandobyte + Parameter)
-	BYTE *data = new BYTE[1 + paramCount];
+	BYTE *data = new BYTE[16];
 
-	// Das Anfrage Byte an erste stelle setzten
-	data[0] = com;
+	// Einfügen der gesamten BYTE-Länge.
+	data[0] = paramCount;
 
-	// Parameterbytes zuweisen
-	int i;
-	for(i = 0; i < paramCount; i++)
+	for(int i = 0; i < data[0]; i++)
 	{
-		data[i + 1] = params[i];
+		// Einfügen des package-Arrays in das data-Array
+		data[i+1] = package[i];
 	}
 
 	// Anzahl der gesendeten Daten merken
-	int n = write(_handle, data, paramCount + 1);
+	int n = write(_handle, data, paramCount);
 
 	// Anzahl der gesendeten Daten pruefen
-	if(n < (paramCount + 1))
+	if(n < data[0])
 	{
 		// Mist
 		throw THOMASException("Fehler beim Senden eines Befehls!");
@@ -104,4 +106,25 @@ void ArduinoCom::Send(BYTE com, BYTE *params, int paramCount)
 
 	// Speicher freigeben
 	delete[] data;
+}
+
+void ArduinoCom::Receive()
+{
+	// Erstelle Variable für die BYTE Länge
+	ssize_t bytes;
+
+	//Erste Variable für den BYTE Buffer
+	unsigned BYTE buffer[16];
+	
+	//Lese die Schnittstelle aus, solange die Anzahl der BYTES nicht 0 ist.
+	do
+	{
+		bytes = read (_handle, buffer, sizeof(buffer));
+	}
+	while(bytes == 0);
+	
+	for(ssize_t i = 0; i < bytes; ++i){
+		std::cout << (int) buffer[i];
+	}
+
 }

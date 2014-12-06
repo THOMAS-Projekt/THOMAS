@@ -37,6 +37,9 @@ namespace THOMAS
 		// Parameter:
 		// -> com: Das zu übergebende Befehlsbyte.
 		// -> params: Die zu übergebenden Parameter.
-		void Send(BYTE com, BYTE *params, int paramCount);
+		void Send(BYTE *package, int paramCount);
+
+		// Empfängt die BYTES aus dem USB Port
+		void Receive();
 	};
 }
