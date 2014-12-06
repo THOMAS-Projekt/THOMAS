@@ -14,7 +14,6 @@ Diese Klasse übernimmt die direkte Low-Level-Kommunikation mit dem Arduino für
 // BYTE-Typ.
 #define BYTE char
 
-
 /* KLASSE */
 namespace THOMAS
 {
@@ -23,6 +22,9 @@ namespace THOMAS
 	private:
 		// Das interne USB-Handle.
 		int _handle;
+
+		// Das Buffer Array: Bearbeiten für größere Daten, die der Arduino sendet
+		BYTE buffer[16];
 
 	public:
 		// Konstruktor.
@@ -37,9 +39,9 @@ namespace THOMAS
 		// Parameter:
 		// -> com: Das zu übergebende Befehlsbyte.
 		// -> params: Die zu übergebenden Parameter.
-		void Send(BYTE *package, int paramCount);
+		void Send(BYTE *package, int packageLength);
 
-		// Empfängt die BYTES aus dem USB Port
-		void Receive();
+		// Empfängt die BYTES aus dem USB Port und gibt die Daten zurück
+		BYTE* Receive();
 	};
 }

@@ -29,7 +29,7 @@ using namespace THOMAS;
 // Programm-Einstiegsfunktion.
 int main(int argc, char **argv)
 {
-	//Motorsteuerung starten
+	// Motorsteuerung starten
 	MotorControl *motorControl = new MotorControl();
 	motorControl->Run();
 
