@@ -33,7 +33,7 @@ using namespace THOMAS;
 ArduinoCom::ArduinoCom()
 {
 	// Anschlusshandle erstellen, RS232-Anschluss (ttyACM0) laden
-	_handle = open("test.txt", O_RDWR | O_NOCTTY | O_NDELAY);
+	_handle = open("/dev/urandom", O_RDWR | O_NOCTTY | O_NDELAY);
 
 	// Fehler abfangen
 	if(_handle == -1) {
@@ -118,7 +118,13 @@ BYTE* ArduinoCom::Receive()
 		bytes = read (_handle, buffer, sizeof(buffer));
 	}
 	while(bytes == 0);
-
+	
+	// 
+	if(bytes == -1){
+		// Da hat wohl einer den Hahn zugedreht
+		throw THOMASException("Verbindung geschlossen!");
+	}
+	
 	return buffer;
 
 }

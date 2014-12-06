@@ -1,8 +1,8 @@
 CPPARGS= -std=c++11 -pthread
 LINKERARGS= -pthread
 
-all: main.o RS232.o ArduinoCom.o TCPServer.o MotorControl.o THOMASException.o
-	g++ THOMASException.o RS232.o ArduinoCom.o TCPServer.o MotorControl.o main.o -o thomas $(LINKERARGS)
+all: main.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o THOMASException.o
+	g++ THOMASException.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o main.o -o thomas $(LINKERARGS)
 
 test: test.o TCPServer.o
 	g++ TCPServer.o test.o -o test $(LINKERARGS)
@@ -18,6 +18,9 @@ RS232.o: RS232.cpp RS232.h
 
 ArduinoCom.o: ArduinoCom.cpp ArduinoCom.h
 	g++ -c ArduinoCom.cpp $(CPPARGS)
+
+ArduinoProtocol.o: ArduinoProtocol.cpp ArduinoProtocol.h
+	g++ -c ArduinoProtocol.cpp $(CPPARGS)
 
 TCPServer.o: TCPServer.cpp TCPServer.h
 	g++ -c TCPServer.cpp $(CPPARGS)

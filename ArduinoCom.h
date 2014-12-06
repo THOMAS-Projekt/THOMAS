@@ -37,8 +37,7 @@ namespace THOMAS
 
 		// Sendet die übergebenen Bytes an den USB-Port und gibt bei Erfolg true zurück, bei Fehlern false.
 		// Parameter:
-		// -> com: Das zu übergebende Befehlsbyte.
-		// -> params: Die zu übergebenden Parameter.
+		// -> package: Die zu übergebenden Parameter.
 		void Send(BYTE *package, int packageLength);
 
 		// Empfängt die BYTES aus dem USB Port und gibt die Daten zurück

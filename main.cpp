@@ -15,6 +15,9 @@ using namespace THOMAS;
 // ArduinoCom-Klasse
 #include "ArduinoCom.h"
 
+// ArduinoProtocol-Klasse
+#include "ArduinoProtocol.h"
+
 // C++-iostream-Header
 // Enthält die wichtigen Konsolen-Ein-/Ausgabe-Streams.
 #include <iostream>
@@ -30,16 +33,18 @@ using namespace THOMAS;
 int main(int argc, char **argv)
 {
 	// Motorsteuerung starten
-	MotorControl *motorControl = new MotorControl();
-	motorControl->Run();
+	//MotorControl *motorControl = new MotorControl();
+	//motorControl->Run();
 
 	//Arduino Kommunikation starten -> Nur zum developen
 	//ArduinoCom *arduinoCom = new ArduinoCom();
 
+	ArduinoProtocol *arduinoProtocol = new ArduinoProtocol();
+
 	// Programm laufen lassen, Prozessor nicht unnötig belasten (alles läuft in separaten Threads)
 	// TODO: Programm-Befehle per Tastatur etc.
-	while(true)
-		sleep(2);
+	//while(true)
+	//	sleep(2);
 
 	// Programm erfolgreich beendet
 	return 0;
