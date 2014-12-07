@@ -5,7 +5,6 @@ Definiert die ArduinoProtocol-Klasse
 Diese Klasse enthält das Protocol zur Kommunikation mit dem Arduino
 */
 
-
 /* INCLUDES */
 
 // ArduinoCom-Klasse
@@ -31,7 +30,7 @@ namespace THOMAS
 		// Liste der CamServos
 		enum CamID{FRONT_CAM};
 
-		//ArduinoCom Instanz
+		// ArduinoCom Instanz
 		ArduinoCom *arduinoCom;
 
 

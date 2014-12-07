@@ -2,7 +2,6 @@
 -- ArduinoProtocol-KLASSE :: IMPLEMENTIERUNG --
 */
 
-
 /* INCLUDES */
 
 // Klassenheader
@@ -18,20 +17,7 @@ using namespace THOMAS;
 // C++-IO-Stream-Klasse
 #include <iostream>
 
-// Terminal-IO-Definitionen [Non-Standard]
-// In diesem Header wird u.a. die termios-Struktur definiert.
-#include <termios.h>
-
-// POSIX-Definitionen [Non-Standard]
-// Dieser Header enthält u.a. Definitionen für viele POSIX-Systemaufrufe.
-#include <unistd.h>
-
-// File-Control-Definitionen [Non-Standard]
-// Dieser Header erhält u.a. die Definition des open()-Systemaufrufs.
-#include <fcntl.h>
-
-//CString
-// Dieser Header enthält unteranderem die strcpy Funktion
+// CString - Enthält underanderem die strcpy Funktion
 #include <cstring>
 
 /* FUNKTIONEN */
@@ -41,21 +27,19 @@ ArduinoProtocol::ArduinoProtocol()
 {
 	// Instanziere die ArduinoCom Klasse
 	arduinoCom = new ArduinoCom();
-	
-	SetText("Halloundso");
 }
 
 int ArduinoProtocol::SetText(std::string text)
 {
 
-	//Erstellt neuen Char mit der Länge des Strings
+	// Erstellt neuen Char mit der Länge des Strings
 	BYTE textData[text.length()];
 
 	// Kopire den String in das Char Array
 	std::strcpy(textData, text.c_str());
 
 	// Erstelle neues Package
-	BYTE package[4 + text.length()];
+	BYTE package[3 + text.length()];
 
 	// 0 = Meldung ausgeben
 	package[0] = 1;
@@ -88,7 +72,7 @@ int ArduinoProtocol::GetDistance(USensor us)
 	// 2 = Messwet abrufen
 	BYTE package[4] = {2,0,us,2};
 
-	//Sende das Package an den Arduino
+	// Sende das Package an den Arduino
 	arduinoCom->Send(package,4);
 
 	// Gelesenen Wert zurück geben
@@ -97,19 +81,8 @@ int ArduinoProtocol::GetDistance(USensor us)
 
 int ArduinoProtocol::GetStatus(USensor us, bool newRequest)
 {
-	BYTE request;
-
-	// Wert aktuallisieren
-	if(newRequest)
-	{
-		request = 0;
-	}
-
-	//Wert abrufen
-	else
-	{
-		request = 1;
-	}
+	// Wähle zwischen aktuallisieren und abrufen
+	BYTE request = newRequest ? 0 : 1;
 
 	// Erstelle Package
 	// Parameter:
