@@ -54,6 +54,9 @@ namespace THOMAS
 
 		// Ändere Kameraposition um Grad
 		int ChangeCamPosition(CamID camID, int grad);
+
+		// Wartet bis der Arduino resettet ist.
+		void WaitForArduino();
 		
 	};
 }

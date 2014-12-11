@@ -27,6 +27,9 @@ ArduinoProtocol::ArduinoProtocol()
 {
 	// Instanziere die ArduinoCom Klasse
 	arduinoCom = new ArduinoCom();
+	
+	// Warte auf Antwort des Arduinos
+	WaitForArduino();
 }
 
 int ArduinoProtocol::SetText(std::string text)
@@ -134,6 +137,14 @@ int ArduinoProtocol::ChangeCamPosition(CamID camID, int grad)
 	return (int) arduinoCom->Receive()[0];
 }
 
+void ArduinoProtocol::WaitForArduino(){
+
+		// Rufe die Recieve Funktion auf und warte auf Antwort des Arduinos
+		if(arduinoCom->Receive()[0] != 1){
+			throw THOMASException("Der Arduino liefert ein ungültiges Byte");
+		}
+
+}
 
 
 
