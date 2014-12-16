@@ -27,13 +27,13 @@ using namespace THOMAS;
 // Dieser Header erhält u.a. die Definition des open()-Systemaufrufs.
 #include <fcntl.h>
 
-
 /* FUNKTIONEN */
 
+// Konstruktor
 ArduinoCom::ArduinoCom()
 {
 	// Anschlusshandle erstellen, RS232-Anschluss (ttyACM0) laden
-	_handle = open("/dev/urandom", O_RDWR | O_NOCTTY | O_NDELAY);
+	_handle = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_NDELAY);
 
 	// Fehler abfangen
 	if(_handle == -1) {
@@ -54,6 +54,10 @@ ArduinoCom::ArduinoCom()
 	cfsetispeed(&fOpt, B9600); // Input
 	cfsetospeed(&fOpt, B9600); // Output
 
+	// Konfigurieren, dass das Programm auf eine Antwort warten soll
+	fOpt.c_cc[VMIN] = 1;
+	fOpt.c_cc[VTIME] = 1;
+
 	// TODO: Daten empfangen?
 	/*
 	// Flags setzen
@@ -62,8 +66,7 @@ ArduinoCom::ArduinoCom()
 	fOpt.c_cflag &= ~CSTOPB;
 	fOpt.c_cflag &= ~CSIZE;
 	fOpt.c_cflag |= CS8;
-	fOpt.c_cc[VMIN] = 1;
-	fOpt.c_cc[VTIME] = 0;
+
 	fOpt.c_cflag |= (CLOCAL | CREAD);
 	*/
 
@@ -72,12 +75,14 @@ ArduinoCom::ArduinoCom()
 
 }
 
+// Destruktor
 ArduinoCom::~ArduinoCom()
 {
 	// Verbindung schließen
 	close(_handle);
 }
 
+// Daten an den Arduino senden
 void ArduinoCom::Send(BYTE *package, int packageLength)
 {
 	// Data Array mit packageLength
@@ -86,12 +91,12 @@ void ArduinoCom::Send(BYTE *package, int packageLength)
 	// Einfügen der gesamten BYTE-Länge.
 	data[0] = packageLength;
 
+	// Inhalt des Paketes durchlaufen
 	for(int i = 0; i < packageLength; i++)
 	{
 		// Einfügen des package-Arrays in das data-Array
 		data[i+1] = package[i];
 	}
-	
 
 	// Anzahl der gesendeten Daten merken
 	int n = write(_handle, data, packageLength + 1);
@@ -107,24 +112,77 @@ void ArduinoCom::Send(BYTE *package, int packageLength)
 	delete[] data;
 }
 
+// Auf ein eingehendes Paket warten und dieses zurückgeben
 BYTE* ArduinoCom::Receive()
 {
 	// Erstelle Variable für die BYTE Länge
 	ssize_t bytes;
 
-	// Lese die Schnittstelle aus, solange die Anzahl der BYTES nicht 0 ist.
-	do
-	{
-		bytes = read (_handle, buffer, sizeof(buffer));
-	}
-	while(bytes == 0);
-	
-	// 
-	if(bytes == -1){
-		// Da hat wohl einer den Hahn zugedreht
-		throw THOMASException("Verbindung geschlossen!");
-	}
-	
-	return buffer;
+	// Byte-Array für den Header
+	BYTE header[1] = {0};
 
+	// Temporärer Puffer
+	BYTE tempBuffer[1] = {0};
+
+	// Puffer für das Paket
+	buffer = new BYTE[header[0]];
+
+	// Header empfangen
+	read (_handle, header, 1);
+
+	// Daten empfangen
+	for(int i = 0; i < header[0]; i++){
+		// Nächstes Byte aus dem Stream lesen
+		read(_handle, tempBuffer, 1);
+
+		// Byte in den Puffer schreiben
+		buffer[i] = tempBuffer[0];
+	}
+
+	// Puffer zurückgeben
+	return buffer;
 }
+
+// Hilfsfunktion zum Ausführen eines Befehles in der Konsole
+std::string ArduinoCom::Exec(std::string cmd)
+{
+	// String für die Antwort
+	std::string data;
+
+	// Stream
+	FILE * stream;
+
+	// Größe des Puffers
+	const int max_buffer = 256;
+
+	// Puffer
+	char buffer[max_buffer];
+
+	// String zum Weiterreichen der Ausgabe an den Befehl anhängen
+	cmd.append(" 2>&1");
+
+	// Stram zum Lesen öffnen
+	stream = popen(cmd.c_str(), "r");
+
+	// Öffnen erfolgreich...?
+	if (stream)
+	{
+		// Schleife
+		while (!feof(stream))
+		{
+			// Daten vorhanden?
+			if (fgets(buffer, max_buffer, stream) != NULL)
+			{
+				// An die Antwort anhängen
+				data.append(buffer);
+			}
+
+			// Stream schlißen
+			pclose(stream);
+		}
+	}
+
+	// Antwort zurückgeben
+	return data;
+}
+

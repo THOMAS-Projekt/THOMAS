@@ -8,6 +8,7 @@ Diese Klasse übernimmt die direkte Low-Level-Kommunikation mit dem Arduino für
 
 /* INCLUDES */
 
+#include <iostream>
 
 /* KONSTANTEN */
 
@@ -24,7 +25,7 @@ namespace THOMAS
 		int _handle;
 
 		// Das Buffer Array: Bearbeiten für größere Daten, die der Arduino sendet
-		BYTE buffer[16];
+		BYTE *buffer;
 
 	public:
 		// Konstruktor.
@@ -42,5 +43,9 @@ namespace THOMAS
 
 		// Empfängt die BYTES aus dem USB Port und gibt die Daten zurück
 		BYTE* Receive();
+
+		// Eine Hilfsfunktion zum Abrufen der Rückgabe eines Befehles (Wird z.B. zum Ermitteln der SSID benötigt.)
+		// TODO: In eine eigene Utils-Klasse verschieben
+		std::string Exec(std::string cmd);
 	};
 }

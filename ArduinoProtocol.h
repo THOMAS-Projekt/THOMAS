@@ -2,8 +2,9 @@
 /*
 -- ArduinoProtocol :: HEADER --
 Definiert die ArduinoProtocol-Klasse
-Diese Klasse enthält das Protocol zur Kommunikation mit dem Arduino
+Diese Klasse enthält das Protokoll zur Kommunikation mit dem Arduino
 */
+
 
 /* INCLUDES */
 
@@ -18,45 +19,63 @@ Diese Klasse enthält das Protocol zur Kommunikation mit dem Arduino
 // BYTE-Typ.
 #define BYTE char
 
+// Ultraschallsensoren
+#define US_FRONT_RIGHT 0
+#define US_FRONT_MIDDLE 1
+#define US_FRONT_LEFT 2
+#define US_BACK_RIGHT 3
+#define US_BACK_LEFT 4
+
+// Hardware-Zustände
+#define HARDWARE_DEFEKT 0
+#define HARDWARE_OK 1
+
+// Kamera-Servos
+#define CAM_FRONT 0
+
+// Prioritäten
+#define PRIORITY_INFO 0
+#define PRIORITY_WARNING 1
+#define PRIORITY_ERROR 2
+
 /* KLASSE */
 namespace THOMAS
 {
 	class ArduinoProtocol
 	{
 	private:
-		// Liste der Ultraschallsensoren
-		enum USensor{FRONT_RIGHT,FRONT_MIDDLE,FRONT_LEFT,BACK_RIGHT,BACK_LEFT};
-
-		// Liste der CamServos
-		enum CamID{FRONT_CAM};
-
-		// ArduinoCom Instanz
+		// Das Kommunikations-Objekt
 		ArduinoCom *arduinoCom;
-
 
 	public:
 		// Konstruktor
 		ArduinoProtocol();
 
-		// Setze Text auf LCD 
-		int SetText(std::string text);
+		// Setze Text auf LCD
+		void WriteMessage(std::string text, char priority);
 
-		// Entfernung des USensors auslesen
-		int GetDistance(USensor us);
+		// Entfernung des Ultraschallsensors auslesen
+		int GetDistance(char sensorID);
 
-		// Status abrufen
-		// Parameter:
-		// newRequest = Soll der Sensorwert aktuallisiert werden? Dauert 0,25 Sekunden
-		int GetStatus(USensor us,bool newRequest);
+		// Sensorstatus abrufen und evtl. vorher aktualisieren
+		int GetStatus(char sensorID, bool newRequest);
 
-		// Setze die Servoposition
-		int SetCamPosition(CamID camID, int grad);
+		// Position der Kamera setzen
+		int SetCamPosition(char camera, char degree);
 
-		// Ändere Kameraposition um Grad
-		int ChangeCamPosition(CamID camID, int grad);
+		// Kamera um einen bestimmten Wert drehen
+		int ChangeCamPosition(char camera, char degree);
 
-		// Wartet bis der Arduino resettet ist.
+		// Funktion zum Anpingen des Arduinos (Bei einem Fehlschlag stoppt das Programm.)
+		void Heartbeat();
+
+		// Auf Neustart des Arduinos warten
 		void WaitForArduino();
-		
+
+		// Die SSID des verbundenen Netzwerkes an den Arduino senden
+		void SetCurrentSSID();
+
+		// Die Signalstärke des verbundenen Netzwerkes an den Arduino senden
+		void SetSignalStrength();
 	};
 }
