@@ -83,7 +83,7 @@ ArduinoCom::~ArduinoCom()
 }
 
 // Daten an den Arduino senden
-void ArduinoCom::Send(BYTE *package, int packageLength)
+void ArduinoCom::Send(BYTE *package, char packageLength)
 {
 	// Data Array mit packageLength
 	BYTE *data = new BYTE[packageLength +1];

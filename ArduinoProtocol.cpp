@@ -79,7 +79,7 @@ void ArduinoProtocol::WriteMessage(std::string text, char priority)
 	if((int) arduinoCom->Receive()[0] != text.length())
 	{
 		// Fehlermeldung
-		std::cout << "Übertragungsfehler beim Senden des Textes \n";
+		throw THOMASException("Fehler: Senden der Nachricht an den Arduino fehlgeschlagen!");
 	}
 }
 
@@ -165,7 +165,12 @@ void ArduinoProtocol::Heartbeat()
 	// Paket an den Arduino senden
 	arduinoCom->Send(package,1);
 
-	// TODO: Exception wenn nicht 1
+	// Wert korrekt?
+	if((int) arduinoCom->Receive()[0] != 1)
+	{
+		// Fehler
+		throw THOMASException("Fehler: Der Arduino hält sich nicht an das Protokoll!");
+	}
 }
 
 // Auf den Neustart des Arduinos warten
@@ -224,7 +229,7 @@ void ArduinoProtocol::SetCurrentSSID()
 	if((int) arduinoCom->Receive()[0] != 1)
 	{
 		// Fehler
-		std::cout << "Setzen der SSID fehlgeschlagen";
+		throw THOMASException("Fehler: Senden der SSID an den Arduino fehlgeschlagen!");
 	}
 }
 
@@ -241,7 +246,7 @@ void ArduinoProtocol::SetSignalStrength()
 	if(strg_value < 0 || strg_value > 100)
 	{
 		// Fehlermeldung
-		std::cout << "Die erhaltene Empfangsstärke ist ungültig.\n";
+		throw THOMASException("Fehler: Die erhaltene Empfangsstärke ist ungültig!");
 	}
 
 	// Paket erstellen:
@@ -257,7 +262,7 @@ void ArduinoProtocol::SetSignalStrength()
 	if((int) arduinoCom->Receive()[0] != 1)
 	{
 		// Fehler
-		std::cout << "Setzen der Signalstärke fehlgeschlagen";
+		throw THOMASException("Fehler: Senden der Signalstärke an den Arduino fehlgeschlagen!");
 	}
 }
 
