@@ -18,6 +18,7 @@ Diese Klasse enthält das Protokoll zur Kommunikation mit dem Arduino
 
 // BYTE-Typ.
 #define BYTE char
+#define UBYTE unsigned char
 
 // Ultraschallsensoren
 #define US_FRONT_RIGHT 0
@@ -52,19 +53,19 @@ namespace THOMAS
 		ArduinoProtocol();
 
 		// Setze Text auf LCD
-		void WriteMessage(std::string text, char priority);
+		void WriteMessage(std::string text, unsigned char priority);
 
 		// Entfernung des Ultraschallsensors auslesen
-		int GetDistance(char sensorID);
+		int GetDistance(unsigned char sensorID);
 
 		// Sensorstatus abrufen und evtl. vorher aktualisieren
-		int GetStatus(char sensorID, bool newRequest);
+		int GetStatus(unsigned char sensorID, bool newRequest);
 
 		// Position der Kamera setzen
-		int SetCamPosition(char camera, char degree);
+		int SetCamPosition(unsigned char camera, unsigned char degree);
 
 		// Kamera um einen bestimmten Wert drehen
-		int ChangeCamPosition(char camera, char degree);
+		int ChangeCamPosition(unsigned char camera, unsigned char degree);
 
 		// Funktion zum Anpingen des Arduinos (Bei einem Fehlschlag stoppt das Programm.)
 		void Heartbeat();

@@ -14,6 +14,7 @@ Diese Klasse übernimmt die direkte Low-Level-Kommunikation mit dem Arduino für
 
 // BYTE-Typ.
 #define BYTE char
+#define UBYTE unsigned char
 
 /* KLASSE */
 namespace THOMAS
@@ -25,7 +26,7 @@ namespace THOMAS
 		int _handle;
 
 		// Das Buffer Array: Bearbeiten für größere Daten, die der Arduino sendet
-		BYTE *buffer;
+		UBYTE *buffer;
 
 	public:
 		// Konstruktor.
@@ -36,13 +37,13 @@ namespace THOMAS
 		// Trennt die Verbindung mit dem Arduino.
 		~ArduinoCom();
 
-		// Sendet die übergebenen Bytes an den USB-Port und gibt bei Erfolg true zurück, bei Fehlern false.
+		// Sendet die übergebenen UBYTEs an den USB-Port und gibt bei Erfolg true zurück, bei Fehlern false.
 		// Parameter:
 		// -> package: Die zu übergebenden Parameter.
-		void Send(BYTE *package, char packageLength);
+		void Send(UBYTE *package, unsigned char packageLength);
 
-		// Empfängt die BYTES aus dem USB Port und gibt die Daten zurück
-		BYTE* Receive();
+		// Empfängt die UBYTES aus dem USB Port und gibt die Daten zurück
+		UBYTE* Receive();
 
 		// Eine Hilfsfunktion zum Abrufen der Rückgabe eines Befehles (Wird z.B. zum Ermitteln der SSID benötigt.)
 		// TODO: In eine eigene Utils-Klasse verschieben

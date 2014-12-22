@@ -72,7 +72,6 @@ ArduinoCom::ArduinoCom()
 
 	// Neue Port-Optionen einsetzen
 	tcsetattr(_handle, TCSANOW, &fOpt);
-
 }
 
 // Destruktor
@@ -83,12 +82,12 @@ ArduinoCom::~ArduinoCom()
 }
 
 // Daten an den Arduino senden
-void ArduinoCom::Send(BYTE *package, char packageLength)
+void ArduinoCom::Send(UBYTE *package, unsigned char packageLength)
 {
 	// Data Array mit packageLength
-	BYTE *data = new BYTE[packageLength +1];
+	UBYTE *data = new UBYTE[packageLength +1];
 
-	// Einfügen der gesamten BYTE-Länge.
+	// Einfügen der gesamten UBYTE-Länge.
 	data[0] = packageLength;
 
 	// Inhalt des Paketes durchlaufen
@@ -113,29 +112,29 @@ void ArduinoCom::Send(BYTE *package, char packageLength)
 }
 
 // Auf ein eingehendes Paket warten und dieses zurückgeben
-BYTE* ArduinoCom::Receive()
+UBYTE* ArduinoCom::Receive()
 {
-	// Erstelle Variable für die BYTE Länge
-	ssize_t bytes;
+	// Erstelle Variable für die UBYTE Länge
+	ssize_t UBYTEs;
 
-	// Byte-Array für den Header
-	BYTE header[1] = {0};
+	// UBYTE-Array für den Header
+	UBYTE header[1] = {0};
 
 	// Temporärer Puffer
-	BYTE tempBuffer[1] = {0};
+	UBYTE tempBuffer[1] = {0};
 
 	// Puffer für das Paket
-	buffer = new BYTE[header[0]];
+	buffer = new UBYTE[header[0]];
 
 	// Header empfangen
 	read (_handle, header, 1);
 
 	// Daten empfangen
 	for(int i = 0; i < header[0]; i++){
-		// Nächstes Byte aus dem Stream lesen
+		// Nächstes UBYTE aus dem Stream lesen
 		read(_handle, tempBuffer, 1);
 
-		// Byte in den Puffer schreiben
+		// UBYTE in den Puffer schreiben
 		buffer[i] = tempBuffer[0];
 	}
 
@@ -178,7 +177,8 @@ std::string ArduinoCom::Exec(std::string cmd)
 			}
 
 			// Stream schlißen
-			pclose(stream);
+			// FIXME: Führt zu Abstürzen, funktioniert aber auch ohne!
+			//pclose(stream);
 		}
 	}
 

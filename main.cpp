@@ -36,10 +36,7 @@ int main(int argc, char **argv)
 	//MotorControl *motorControl = new MotorControl();
 	//motorControl->Run();
 
-	//Arduino Kommunikation starten -> Nur zum developen
-	//ArduinoCom *arduinoCom = new ArduinoCom();
-
-	ArduinoProtocol *arduinoProtocol = new ArduinoProtocol();
+ArduinoProtocol *arduinoProtocol = new ArduinoProtocol();
 
 	// Programm laufen lassen, Prozessor nicht unnötig belasten (alles läuft in separaten Threads)
 	// TODO: Programm-Befehle per Tastatur etc.

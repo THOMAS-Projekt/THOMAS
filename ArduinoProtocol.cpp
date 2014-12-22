@@ -33,19 +33,21 @@ ArduinoProtocol::ArduinoProtocol()
 	arduinoCom = new ArduinoCom();
 
 	// Programm bis zum ersten Lebenszeichen des Arduinos pausieren
+	// (Der Arduino startet beim Verbinden erst neu.)
 	WaitForArduino();
 
-	// Debugmeldung
-	std::cout << "Verbindung zum Arduino hergestelllt \n";
-
-WriteMessage("Ich mag Kekse!", PRIORITY_INFO);
+// FIXME: Es ist nicht möglich längere Texte zu senden, da der Arduino sich dabei aus irgendeinem Grund aufhängt bzw. neustartet.
+// FIXME: Möglicherweise liegt hier ein Problem wegen des horizontalen Scrollens vor, welches ich nicht finden konnte.
+// FIXME: Dieses Problem tritt allerdings nur bei mehrzeiligen Strings auf. Wenn nur eine lange Nachricht gesendet wird scollt dieser korrekt durch.
+WriteMessage("keks1234567654345rztfthdggrzjgfhgs", PRIORITY_WARNING);
+WriteMessage("keksd", PRIORITY_WARNING);
 SetCurrentSSID();
 SetSignalStrength();
-std::cout << GetDistance(US_FRONT_RIGHT);
+std::cout << "Sensor vorne Rechts: " << GetDistance(US_FRONT_LEFT) << "cm\n";
 }
 
 // Text auf das Display schreiben
-void ArduinoProtocol::WriteMessage(std::string text, char priority)
+void ArduinoProtocol::WriteMessage(std::string text, unsigned char priority)
 {
 	// Erstellt neuen Char mit der Länge des Strings
 	BYTE textData[text.length()];
@@ -54,7 +56,7 @@ void ArduinoProtocol::WriteMessage(std::string text, char priority)
 	std::strcpy(textData, text.c_str());
 
 	// Erstelle neues Package
-	BYTE package[3 + text.length()];
+	UBYTE package[3 + text.length()];
 
 	// 0 = Meldung ausgeben
 	package[0] = 1;
@@ -84,14 +86,14 @@ void ArduinoProtocol::WriteMessage(std::string text, char priority)
 }
 
 // Gibt den Messwert des angegebenen Ultraschallsensors in cm zurück
-int ArduinoProtocol::GetDistance(char sensorID)
+int ArduinoProtocol::GetDistance(unsigned char sensorID)
 {
 	// Paket erstellen:
 	// 2 = Sensoren ansprechen
 	// 0 = Ultraschallsensoren
 	// x = SensorID
 	// 2 = Messwet abrufen
-	BYTE package[4] = {2, 0, sensorID, 2};
+	UBYTE package[4] = {2, 0, sensorID, 2};
 
 	// Sende das Paket an den Arduino
 	arduinoCom->Send(package, 4);
@@ -101,17 +103,17 @@ int ArduinoProtocol::GetDistance(char sensorID)
 }
 
 // Ruft den Status des angegebenen Sensors ab, bzw. aktualisiert diesen vorher
-int ArduinoProtocol::GetStatus(char sensorID, bool newRequest)
+int ArduinoProtocol::GetStatus(unsigned char sensorID, bool newRequest)
 {
 	// Wähle zwischen aktuallisieren und abrufen
-	BYTE requestType = newRequest ? 0 : 1;
+	UBYTE requestType = newRequest ? 0 : 1;
 
 	// Paket erstellen:
 	// 2 = Sensoren ansprechen
 	// 0 = Ultraschallsensoren
 	// x = SensorID
 	// 1/2 Status aktuallisieren/abrufen
-	BYTE package[4] = {2, 0, sensorID, requestType};
+	UBYTE package[4] = {2, 0, sensorID, requestType};
 
 	// Sende das Paket an den Arduino
 	arduinoCom->Send(package, 4);
@@ -121,7 +123,7 @@ int ArduinoProtocol::GetStatus(char sensorID, bool newRequest)
 }
 
 // Position der Kamera auf einen bestimmten Winkel setzen
-int ArduinoProtocol::SetCamPosition(char camera, char degree)
+int ArduinoProtocol::SetCamPosition(unsigned char camera, unsigned char degree)
 {
 	// Paket erstellen:
 	// 3 = Aktoren ansprechen
@@ -129,7 +131,7 @@ int ArduinoProtocol::SetCamPosition(char camera, char degree)
 	// x = KameraID
 	// 0 = Drehe auf Wert
 	// y = Grad
-	BYTE package[5] = {3, 0, camera, 0, degree};
+	UBYTE package[5] = {3, 0, camera, 0, degree};
 
 	// Sende das Paket an den Arduino
 	arduinoCom->Send(package, 5);
@@ -139,7 +141,7 @@ int ArduinoProtocol::SetCamPosition(char camera, char degree)
 }
 
 // Position der Kamera um einen bestimmten Winkel drehen
-int ArduinoProtocol::ChangeCamPosition(char camera, char degree)
+int ArduinoProtocol::ChangeCamPosition(unsigned char camera, unsigned char degree)
 {
 	// Paket erstellen:
 	// 3 = Aktoren ansprechen
@@ -147,7 +149,7 @@ int ArduinoProtocol::ChangeCamPosition(char camera, char degree)
 	// x = KameraID
 	// 1 = Drehe um Wert
 	// y = Grad
-	BYTE package[5] = {3, 0, camera, 1, degree};
+	UBYTE package[5] = {3, 0, camera, 1, degree};
 
 	// Sende das Paket an den Arduino
 	arduinoCom->Send(package, 5);
@@ -160,7 +162,7 @@ int ArduinoProtocol::ChangeCamPosition(char camera, char degree)
 void ArduinoProtocol::Heartbeat()
 {
 	// Das Ping-Paket
-	BYTE package[1] = {0};
+	UBYTE package[1] = {0};
 
 	// Paket an den Arduino senden
 	arduinoCom->Send(package,1);
@@ -204,7 +206,7 @@ void ArduinoProtocol::SetCurrentSSID()
 	std::strcpy(textData, SSID.c_str());
 
 	// Paket erstellen
-	BYTE package[3 + SSID.length()];
+	UBYTE package[3 + SSID.length()];
 
 	// 4 = Status ändern
 	package[0] = 4;
@@ -240,7 +242,7 @@ void ArduinoProtocol::SetSignalStrength()
 	std::string strength = arduinoCom->Exec("iwconfig wlan0 | grep -i Signal | cut -d = -f 3");
 
 	// Das Vorzeichen und die Einheitsangabe entfernen
-	BYTE strg_value = atoi(strength.substr(0, strength.length() - 4).c_str()) * (-1);
+	UBYTE strg_value = atoi(strength.substr(0, strength.length() - 4).c_str()) * (-1);
 
 	// Gültiger Wert?
 	if(strg_value < 0 || strg_value > 100)
@@ -253,7 +255,7 @@ void ArduinoProtocol::SetSignalStrength()
 	// 4 = Status ändern
 	// 1 = Signalstärke
 	// x = Wert
-	BYTE package[3] = {4, 1, strg_value};
+	UBYTE package[3] = {4, 1, strg_value};
 
 	// Paket senden
 	arduinoCom->Send(package,3);
