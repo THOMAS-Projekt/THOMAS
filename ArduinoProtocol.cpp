@@ -290,6 +290,9 @@ void ArduinoProtocol::SetSignalStrength()
 	// Wert falls nötig korrigieren
 	strg_value = strg_value > 100 ? 100 : strg_value;
 	strg_value = strg_value < 0 ? 0 : strg_value;
+	
+	// Invertieren
+	strg_value = 100-strg_value;
 
 	// Paket erstellen:
 	// 4 = Status ändern
