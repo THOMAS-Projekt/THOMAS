@@ -287,12 +287,17 @@ void ArduinoProtocol::SetSignalStrength()
 	// Das Vorzeichen und die Einheitsangabe entfernen
 	UBYTE strg_value = atoi(strength.substr(0, strength.length() - 4).c_str()) * (-1);
 
-	// Wert falls nötig korrigieren
-	strg_value = strg_value > 100 ? 100 : strg_value;
-	strg_value = strg_value < 0 ? 0 : strg_value;
+	// Ausgabe leer?
+	if(strg_value != 0)
+	{
+
+		// Wert falls nötig korrigieren
+		strg_value = strg_value > 100 ? 100 : strg_value;
+		strg_value = strg_value < 0 ? 0 : strg_value;
 	
-	// Invertieren
-	strg_value = 100-strg_value;
+		// Invertieren
+		strg_value = 100 - strg_value;
+	}
 
 	// Paket erstellen:
 	// 4 = Status ändern
