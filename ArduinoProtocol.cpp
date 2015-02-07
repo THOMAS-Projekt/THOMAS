@@ -35,7 +35,6 @@ ArduinoProtocol::ArduinoProtocol()
 // Erstellt neuen Thread
 void ArduinoProtocol::Run()
 {
-
 	// Läuft die Kommunikation schon?
 	if(running)
 		throw THOMASException("Die Arduinokommunikation läuft bereits!");
@@ -48,10 +47,16 @@ void ArduinoProtocol::Run()
 
 	// Programm bis zum ersten Lebenszeichen des Arduinos pausieren
 	// (Der Arduino startet beim Verbinden erst neu.)
-	//WaitForArduino();
+	WaitForArduino();
 
-	// TEMP
-	//Setup();
+// FIXME: Es ist nicht möglich längere Texte zu senden, da der Arduino sich dabei aus irgendeinem Grund aufhängt bzw. neustartet.
+// FIXME: Möglicherweise liegt hier ein Problem wegen des horizontalen Scrollens vor, welches ich nicht finden konnte.
+// FIXME: Dieses Problem tritt allerdings nur bei mehrzeiligen Strings auf. Wenn nur eine lange Nachricht gesendet wird scollt dieser korrekt durch.
+//WriteMessage("keks1234567654345rztfthdggrzjgfhgs", PRIORITY_WARNING);
+//WriteMessage("keksd", PRIORITY_WARNING);
+SetCurrentSSID();
+//SetSignalStrength();
+//std::cout << "Sensor vorne Rechts: " << GetDistance(US_FRONT_LEFT) << "cm\n";
 
 	// Neuen Signalstrength Thread
 	signalStrengthThread = new std::thread(&ArduinoProtocol::SignalStrengthThreadWrapper,this);
@@ -62,39 +67,24 @@ void ArduinoProtocol::Stop()
 	// Läuft die Kommunikation?
 	if(!running)
 		throw THOMASException("Die Arduinokommunikation ist nicht aktiv!");
-	
+
 	// Setzte Status auf False
 	running = false;
 
-	// Kommunikation beenden
+	// Thread beenden
 	signalStrengthThread->join();
 	delete signalStrengthThread;
-
 }
 
-// TEMP
-void ArduinoProtocol::Setup()
-{
-
-	// FIXME: Es ist nicht möglich längere Texte zu senden, da der Arduino sich dabei aus irgendeinem Grund aufhängt bzw. neustartet.
-	// FIXME: Möglicherweise liegt hier ein Problem wegen des horizontalen Scrollens vor, welches ich nicht finden konnte.
-	// FIXME: Dieses Problem tritt allerdings nur bei mehrzeiligen Strings auf. Wenn nur eine lange Nachricht gesendet wird scollt dieser korrekt durch.
-	WriteMessage("keks1234567654345rztfthdggrzjgfhgs", PRIORITY_WARNING);
-	WriteMessage("keksd", PRIORITY_WARNING);
-	SetCurrentSSID();
-	SetSignalStrength();
-	std::cout << "Sensor vorne Rechts: " << GetDistance(US_FRONT_LEFT) << "cm\n";
-	
-
-}
-
-// Aktuallisiert die Signalstärke
+// Thread zum Aktualisieren der Signalstärke
 void ArduinoProtocol::UpdateSignalStrength()
 {
-	while(true){
+	while(true)
+	{
 		// Aktuallisiert die Wlan Signalstärke
 		SetSignalStrength();
-		
+
+		// In der Ruhe liegt die Kraft
 		sleep(5);
 	}
 }
@@ -291,16 +281,13 @@ void ArduinoProtocol::SetCurrentSSID()
 // Die Signalstärke des verbundenen Netzwerkes an den Arduino senden
 void ArduinoProtocol::SetSignalStrength()
 {
-
 	// Signalstärke abrufen und als String speichern
 	std::string strength = arduinoCom->Exec("iwconfig wlan0 | grep -i Signal | cut -d = -f 3");
-	
 
 	// Das Vorzeichen und die Einheitsangabe entfernen
 	UBYTE strg_value = atoi(strength.substr(0, strength.length() - 4).c_str()) * (-1);
-	
 
-	// Gültiger Wert?
+	// Wert falls nötig korrigieren
 	strg_value = strg_value > 100 ? 100 : strg_value;
 	strg_value = strg_value < 0 ? 0 : strg_value;
 
@@ -309,7 +296,6 @@ void ArduinoProtocol::SetSignalStrength()
 	// 1 = Signalstärke
 	// x = Wert
 	UBYTE package[3] = {4, 1, strg_value};
-	
 
 	// Paket senden
 	arduinoCom->Send(package,3);
@@ -320,6 +306,4 @@ void ArduinoProtocol::SetSignalStrength()
 		// Fehler
 		throw THOMASException("Fehler: Senden der Signalstärke an den Arduino fehlgeschlagen!");
 	}
-	
 }
-

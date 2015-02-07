@@ -57,12 +57,8 @@ namespace THOMAS
 		// Status des Threads
 		bool running = false;
 
-		// Wird beim Start eines neuen Threads aufgerufen
-		void Setup();
-		
 		// Updatet die Signalstärke im speraten Thread
 		void UpdateSignalStrength();
-
 
 		// Wrapper, um die UpdateSignalStrength-Memberfunktion sauber an einen separaten Thread zu übergeben
 		static void SignalStrengthThreadWrapper(ArduinoProtocol *obj)

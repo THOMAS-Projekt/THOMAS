@@ -185,4 +185,3 @@ std::string ArduinoCom::Exec(std::string cmd)
 	// Antwort zurückgeben
 	return data;
 }
-
