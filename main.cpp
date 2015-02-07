@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 	// Motorsteuerung starten
 	MotorControl *motorControl = new MotorControl();
 	motorControl->Run();
-	
+
 	// ArduinoProtocol starten
 	ArduinoProtocol *arduinoProtocol = new ArduinoProtocol();
 	arduinoProtocol->Run();
