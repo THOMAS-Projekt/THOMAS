@@ -29,6 +29,45 @@ using namespace THOMAS;
 // Konstruktor
 ArduinoProtocol::ArduinoProtocol()
 {
+
+}
+
+// Erstellt neuen Thread
+void ArduinoProtocol::Run()
+{
+	// Läuft die Kommunikation schon?
+	if(running)
+		throw THOMASException("Die Arduinokommunikation läuft bereits!");
+
+	// Status des Threads auf True setzen.
+	running = true;
+
+	// Neuen Protocol-Thread starten
+	arduinoProtocolThread = new std::thread(&ArduinoProtocol::ArduinoProtocolThreadWrapper,this);
+
+	// Neuen Signalstrength Thread
+	signalStrengthThread = new std::thread(&ArduinoProtocol::SignalStrengthThreadWrapper,this);
+}
+
+void ArduinoProtocol::Stop()
+{
+	// Läuft die Kommunikation?
+	if(!running)
+		throw THOMASException("Die Arduinokommunikation ist nicht aktiv!");
+	
+	// Setzte Status auf False
+	running = false;
+
+	// Kommunikation beenden
+	arduinoProtocolThread->join();
+	delete arduinoProtocolThread;
+
+}
+
+// Funktion wird zuerst im neuen Thread aufgerufen
+void ArduinoProtocol::Setup()
+{
+	
 	// Kommunikationsklasse instanzieren
 	arduinoCom = new ArduinoCom();
 
@@ -36,14 +75,30 @@ ArduinoProtocol::ArduinoProtocol()
 	// (Der Arduino startet beim Verbinden erst neu.)
 	WaitForArduino();
 
-// FIXME: Es ist nicht möglich längere Texte zu senden, da der Arduino sich dabei aus irgendeinem Grund aufhängt bzw. neustartet.
-// FIXME: Möglicherweise liegt hier ein Problem wegen des horizontalen Scrollens vor, welches ich nicht finden konnte.
-// FIXME: Dieses Problem tritt allerdings nur bei mehrzeiligen Strings auf. Wenn nur eine lange Nachricht gesendet wird scollt dieser korrekt durch.
-WriteMessage("keks1234567654345rztfthdggrzjgfhgs", PRIORITY_WARNING);
-WriteMessage("keksd", PRIORITY_WARNING);
-SetCurrentSSID();
-SetSignalStrength();
-std::cout << "Sensor vorne Rechts: " << GetDistance(US_FRONT_LEFT) << "cm\n";
+	// FIXME: Es ist nicht möglich längere Texte zu senden, da der Arduino sich dabei aus irgendeinem Grund aufhängt bzw. neustartet.
+	// FIXME: Möglicherweise liegt hier ein Problem wegen des horizontalen Scrollens vor, welches ich nicht finden konnte.
+	// FIXME: Dieses Problem tritt allerdings nur bei mehrzeiligen Strings auf. Wenn nur eine lange Nachricht gesendet wird scollt dieser korrekt durch.
+	WriteMessage("keks1234567654345rztfthdggrzjgfhgs", PRIORITY_WARNING);
+	WriteMessage("keksd", PRIORITY_WARNING);
+	SetCurrentSSID();
+	SetSignalStrength();
+	std::cout << "Sensor vorne Rechts: " << GetDistance(US_FRONT_LEFT) << "cm\n";
+	
+	// Warten
+	while(true)
+		sleep(2);
+
+}
+
+// Aktuallisiert die Signalstärke
+void ArduinoProtocol::UpdateSignalStrength()
+{
+	while(true){
+		// Aktuallisiert die Wlan Signalstärke		
+			SetSignalStrength();
+		// Warte 5 Sekunden
+		sleep(5);
+	}
 }
 
 // Text auf das Display schreiben
@@ -256,6 +311,7 @@ void ArduinoProtocol::SetSignalStrength()
 	// 1 = Signalstärke
 	// x = Wert
 	UBYTE package[3] = {4, 1, strg_value};
+	
 
 	// Paket senden
 	arduinoCom->Send(package,3);

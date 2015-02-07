@@ -52,6 +52,7 @@ MotorControl::~MotorControl()
 
 void MotorControl::Run()
 {
+
 	// Läuft die Steuerung schon?
 	if(_running)
 		throw THOMASException("Fehler: Die Motorsteuerung ist bereits aktiv!");

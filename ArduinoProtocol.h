@@ -14,6 +14,9 @@ Diese Klasse enthält das Protokoll zur Kommunikation mit dem Arduino
 // C++-IO-Stream-Klasse
 #include <iostream>
 
+// C++ Thread-Klasse
+#include <thread>
+
 /* KONSTANTEN */
 
 // BYTE-Typ.
@@ -48,6 +51,32 @@ namespace THOMAS
 		// Das Kommunikations-Objekt
 		ArduinoCom *arduinoCom;
 
+		// ArduinoProtocol Thread		
+		std::thread *arduinoProtocolThread;
+
+		// Signalstrength Thread
+		std::thread *signalStrengthThread;
+
+		// Status des Threads
+		bool running = false;
+
+		// Wird beim Start eines neuen Threads aufgerufen
+		void Setup();
+		
+		// Updatet die Signalstärke im speraten Thread
+		void UpdateSignalStrength();
+
+		
+		static void ArduinoProtocolThreadWrapper(ArduinoProtocol *obj)
+		{	
+			obj->Setup();
+		}
+
+		static void SignalStrengthThreadWrapper(ArduinoProtocol *obj)
+		{
+			obj->UpdateSignalStrength();
+		}
+
 	public:
 		// Konstruktor
 		ArduinoProtocol();
@@ -78,5 +107,11 @@ namespace THOMAS
 
 		// Die Signalstärke des verbundenen Netzwerkes an den Arduino senden
 		void SetSignalStrength();
+
+		// Startet einen neuen Thread
+		void Run();
+
+		// Stoppt den Thread
+		void Stop();
 	};
 }
