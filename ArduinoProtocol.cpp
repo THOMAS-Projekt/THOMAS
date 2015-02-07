@@ -35,6 +35,7 @@ ArduinoProtocol::ArduinoProtocol()
 // Erstellt neuen Thread
 void ArduinoProtocol::Run()
 {
+
 	// Läuft die Kommunikation schon?
 	if(running)
 		throw THOMASException("Die Arduinokommunikation läuft bereits!");
@@ -42,8 +43,15 @@ void ArduinoProtocol::Run()
 	// Status des Threads auf True setzen.
 	running = true;
 
-	// Neuen Protocol-Thread starten
-	arduinoProtocolThread = new std::thread(&ArduinoProtocol::ArduinoProtocolThreadWrapper,this);
+	// Kommunikationsklasse instanzieren
+	arduinoCom = new ArduinoCom();
+
+	// Programm bis zum ersten Lebenszeichen des Arduinos pausieren
+	// (Der Arduino startet beim Verbinden erst neu.)
+	//WaitForArduino();
+
+	// TEMP
+	//Setup();
 
 	// Neuen Signalstrength Thread
 	signalStrengthThread = new std::thread(&ArduinoProtocol::SignalStrengthThreadWrapper,this);
@@ -59,21 +67,14 @@ void ArduinoProtocol::Stop()
 	running = false;
 
 	// Kommunikation beenden
-	arduinoProtocolThread->join();
-	delete arduinoProtocolThread;
+	signalStrengthThread->join();
+	delete signalStrengthThread;
 
 }
 
-// Funktion wird zuerst im neuen Thread aufgerufen
+// TEMP
 void ArduinoProtocol::Setup()
 {
-	
-	// Kommunikationsklasse instanzieren
-	arduinoCom = new ArduinoCom();
-
-	// Programm bis zum ersten Lebenszeichen des Arduinos pausieren
-	// (Der Arduino startet beim Verbinden erst neu.)
-	WaitForArduino();
 
 	// FIXME: Es ist nicht möglich längere Texte zu senden, da der Arduino sich dabei aus irgendeinem Grund aufhängt bzw. neustartet.
 	// FIXME: Möglicherweise liegt hier ein Problem wegen des horizontalen Scrollens vor, welches ich nicht finden konnte.
@@ -84,9 +85,6 @@ void ArduinoProtocol::Setup()
 	SetSignalStrength();
 	std::cout << "Sensor vorne Rechts: " << GetDistance(US_FRONT_LEFT) << "cm\n";
 	
-	// Warten
-	while(true)
-		sleep(2);
 
 }
 
@@ -94,9 +92,9 @@ void ArduinoProtocol::Setup()
 void ArduinoProtocol::UpdateSignalStrength()
 {
 	while(true){
-		// Aktuallisiert die Wlan Signalstärke		
-			SetSignalStrength();
-		// Warte 5 Sekunden
+		// Aktuallisiert die Wlan Signalstärke
+		SetSignalStrength();
+		
 		sleep(5);
 	}
 }
@@ -293,18 +291,18 @@ void ArduinoProtocol::SetCurrentSSID()
 // Die Signalstärke des verbundenen Netzwerkes an den Arduino senden
 void ArduinoProtocol::SetSignalStrength()
 {
+
 	// Signalstärke abrufen und als String speichern
 	std::string strength = arduinoCom->Exec("iwconfig wlan0 | grep -i Signal | cut -d = -f 3");
+	
 
 	// Das Vorzeichen und die Einheitsangabe entfernen
 	UBYTE strg_value = atoi(strength.substr(0, strength.length() - 4).c_str()) * (-1);
+	
 
 	// Gültiger Wert?
-	if(strg_value < 0 || strg_value > 100)
-	{
-		// Fehlermeldung
-		throw THOMASException("Fehler: Die erhaltene Empfangsstärke ist ungültig!");
-	}
+	strg_value = strg_value > 100 ? 100 : strg_value;
+	strg_value = strg_value < 0 ? 0 : strg_value;
 
 	// Paket erstellen:
 	// 4 = Status ändern
@@ -322,5 +320,6 @@ void ArduinoProtocol::SetSignalStrength()
 		// Fehler
 		throw THOMASException("Fehler: Senden der Signalstärke an den Arduino fehlgeschlagen!");
 	}
+	
 }
 

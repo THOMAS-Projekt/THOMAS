@@ -51,9 +51,6 @@ namespace THOMAS
 		// Das Kommunikations-Objekt
 		ArduinoCom *arduinoCom;
 
-		// ArduinoProtocol Thread		
-		std::thread *arduinoProtocolThread;
-
 		// Signalstrength Thread
 		std::thread *signalStrengthThread;
 
@@ -66,11 +63,6 @@ namespace THOMAS
 		// Updatet die Signalstärke im speraten Thread
 		void UpdateSignalStrength();
 
-		// Wrapper, um die Setup-Memberfunktion sauber an einen separaten Thread zu übergeben
-		static void ArduinoProtocolThreadWrapper(ArduinoProtocol *obj)
-		{	
-			obj->Setup();
-		}
 
 		// Wrapper, um die UpdateSignalStrength-Memberfunktion sauber an einen separaten Thread zu übergeben
 		static void SignalStrengthThreadWrapper(ArduinoProtocol *obj)
