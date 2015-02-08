@@ -129,7 +129,7 @@ void TCPServer::Listen()
 		// Daten in separatem Thread empfangen
 		clientReceiveThreads.push_front(new std::thread(&TCPServer::ReceiveClientWrapper, this, clientSocket));
 	}
-	
+
 	// Abwarten, bis alle Client-Receive-Threads beendet sind
 	for(auto i = clientReceiveThreads.begin(); i != clientReceiveThreads.end(); ++i)
 	{
