@@ -32,7 +32,7 @@ using namespace THOMAS;
 // Konstruktor
 ArduinoCom::ArduinoCom()
 {
-	// Anschlusshandle erstellen, RS232-Anschluss (ttyACM0) laden
+	// Anschlusshandle erstellen, USB-Anschluss (ttyACM0) laden
 	_handle = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_NDELAY);
 
 	// Fehler abfangen
@@ -58,17 +58,13 @@ ArduinoCom::ArduinoCom()
 	fOpt.c_cc[VMIN] = 1;
 	fOpt.c_cc[VTIME] = 1;
 
-	// TODO: Daten empfangen?
-	/*
 	// Flags setzen
 	fOpt.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
 	fOpt.c_cflag &= ~PARENB;
 	fOpt.c_cflag &= ~CSTOPB;
 	fOpt.c_cflag &= ~CSIZE;
 	fOpt.c_cflag |= CS8;
-
 	fOpt.c_cflag |= (CLOCAL | CREAD);
-	*/
 
 	// Neue Port-Optionen einsetzen
 	tcsetattr(_handle, TCSANOW, &fOpt);

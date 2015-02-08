@@ -47,7 +47,12 @@ void ArduinoProtocol::Run()
 
 	// Kommunikationsklasse instanzieren
 	arduinoCom = new ArduinoCom();
-
+do
+{
+int resp = (int) arduinoCom->Receive()[0];
+printf("r%i\n",resp);
+}
+while(true);
 	// Programm bis zum ersten Lebenszeichen des Arduinos pausieren
 	// (Der Arduino startet beim Verbinden erst neu.)
 	WaitForArduino();
@@ -302,7 +307,7 @@ void ArduinoProtocol::WaitForArduino()
 	// Gibt die Antwort an
 	int resp = -1;
 
-	// Endlosschleife bis die Antwort 0 ist
+	// In Endlosschleife aufs erste Lebenszeichen warten
 	do
 	{
 		// Antwort empfangen und merken
