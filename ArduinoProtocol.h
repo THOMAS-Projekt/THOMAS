@@ -17,6 +17,9 @@ Diese Klasse enthält das Protokoll zur Kommunikation mit dem Arduino
 // C++ Thread-Klasse
 #include <thread>
 
+// C++-mutex-Klasse
+#include <mutex>
+
 /* KONSTANTEN */
 
 // BYTE-Typ.
@@ -54,16 +57,31 @@ namespace THOMAS
 		// Signalstrength Thread
 		std::thread *signalStrengthThread;
 
+		// Heartbeat Thread
+		std::thread *heartbeatThread;
+
+		// ArduinoMutex
+		std::mutex *arduinoMutex;
+
 		// Status des Threads
 		bool running = false;
 
 		// Updatet die Signalstärke im speraten Thread
 		void UpdateSignalStrength();
 
+		// Heartbeat Thread
+		void SendHeartbeat();
+
 		// Wrapper, um die UpdateSignalStrength-Memberfunktion sauber an einen separaten Thread zu übergeben
 		static void SignalStrengthThreadWrapper(ArduinoProtocol *obj)
 		{
 			obj->UpdateSignalStrength();
+		}
+
+		// Wrapper, um die SendHeartbeat-Memberfunktion sauber an einen separaten Thread zu übergeben
+		static void SendHeartbeatThreadWrapper(ArduinoProtocol *obj)
+		{
+			obj->SendHeartbeat();
 		}
 
 	public:
