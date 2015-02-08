@@ -290,13 +290,18 @@ void ArduinoProtocol::SetSignalStrength()
 	// Ausgabe leer?
 	if(strg_value != 0)
 	{
+		// Invertieren
+		strg_value = 100 - strg_value;
+
+		// 0 => Am Schlechtesten
+		// 70 => Am Besten
+
+		// Skalierung ändern
+		strg_value = ((float)strg_value / 70) * 100;
 
 		// Wert falls nötig korrigieren
 		strg_value = strg_value > 100 ? 100 : strg_value;
 		strg_value = strg_value < 0 ? 0 : strg_value;
-	
-		// Invertieren
-		strg_value = 100 - strg_value;
 	}
 
 	// Paket erstellen:
