@@ -58,7 +58,7 @@ ArduinoCom::ArduinoCom()
 	fOpt.c_cc[VMIN] = 1;
 	fOpt.c_cc[VTIME] = 1;
 
-	// Flags zum Initialisieren des Arduinos.
+	// Flags zum Initialisieren des Arduinos setzen
 	fOpt.c_cflag |= CS8;
 	fOpt.c_iflag &= ~(IGNBRK | BRKINT | ICRNL | IXON );
 	fOpt.c_oflag &= ~(OPOST | ONLCR);
