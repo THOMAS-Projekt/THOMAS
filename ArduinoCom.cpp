@@ -58,16 +58,17 @@ ArduinoCom::ArduinoCom()
 	fOpt.c_cc[VMIN] = 1;
 	fOpt.c_cc[VTIME] = 1;
 
-	// Flags setzen
-	fOpt.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-	fOpt.c_cflag &= ~PARENB;
-	fOpt.c_cflag &= ~CSTOPB;
-	fOpt.c_cflag &= ~CSIZE;
+	// Flags zum Initialisieren des Arduinos.
 	fOpt.c_cflag |= CS8;
-	fOpt.c_cflag |= (CLOCAL | CREAD);
+	fOpt.c_iflag &= ~(IGNBRK | BRKINT | ICRNL | IXON );
+	fOpt.c_oflag &= ~(OPOST | ONLCR);
+	fOpt.c_lflag &= ~ (ECHO | ECHOCTL | ICANON | ISIG | IEXTEN);
+
+	// Linux-Befehl zum manuellen Resetten des Arduinos:
+	//stty -F /dev/ttyACM0 cs8 9600 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
 
 	// Neue Port-Optionen einsetzen
-	tcsetattr(_handle, TCSANOW, &fOpt);
+	tcsetattr(_handle, TCSAFLUSH, &fOpt);
 }
 
 // Destruktor
