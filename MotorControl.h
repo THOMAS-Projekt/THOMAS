@@ -86,9 +86,26 @@ namespace THOMAS
 		int _lastSpeed[2];
 
 		// Die Anzahl der Joystick-Achsen.
+		// Ermittelte Achsen:
+		// [0] => X-Achse
+		// [1] => Y-Achse
+		// [2] => R-Achse
+		// [3] => Stellrad
+		// [4] => X-Achse Daumen
+		// [5] => Y-Achse Daumen
 		int _joystickAxisCount;
 
 		// Die Anzahl der Joystick-Buttons.
+		// Ermittelte Buttons:
+		// [0] => Feuer-Knopf
+		// [1] => Langer Steuerknopf
+		// [2] => Oberer Steuerknopf
+		// [3] => Unterer Steuerknopf
+		// [4] => A-Knopf
+		// [5] => B-Knopf
+		// [6] => C-Knopf
+		// [7] => D-Knopf
+		// [8] => Pfeil nach oben
 		int _joystickButtonCount;
 
 		// Gibt an, ob die Joystick-Datenarrays ordnungsgemäß initialisiert worden sind.
