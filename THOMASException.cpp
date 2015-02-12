@@ -22,7 +22,7 @@ THOMASException::THOMASException(std::string message)
 	_message = message;
 
 	// Fehlernachricht ausgeben
-	std::cout << "THOMASException: " << message << std::endl;
+	std::cout << "\033[1;31m" << "[THOMASException]" << "\033[0;1m " << message << "\033[0m " << std::endl;
 }
 
 const char* THOMASException::what()
