@@ -12,12 +12,6 @@ using namespace THOMAS;
 // THOMASException-Klasse
 #include "THOMASException.h"
 
-// ArduinoCom-Klasse
-#include "ArduinoCom.h"
-
-// ArduinoProtocol-Klasse
-#include "ArduinoProtocol.h"
-
 // C++-iostream-Header
 // Enthält die wichtigen Konsolen-Ein-/Ausgabe-Streams.
 #include <iostream>
@@ -35,10 +29,6 @@ int main(int argc, char **argv)
 	// Motorsteuerung starten
 	MotorControl *motorControl = new MotorControl();
 	motorControl->Run();
-
-	// ArduinoProtocol starten
-	ArduinoProtocol *arduinoProtocol = new ArduinoProtocol();
-	arduinoProtocol->Run();
 
 	// Programm laufen lassen, Prozessor nicht unnötig belasten (alles läuft in separaten Threads)
 	// TODO: Programm-Befehle per Tastatur etc.

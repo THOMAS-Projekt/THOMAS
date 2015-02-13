@@ -65,11 +65,20 @@ void MotorControl::Run()
 	// Joystick-Mutex erstellen
 	_joystickMutex = new std::mutex();
 
+	// Arduino-Verbindung herstellen
+	_arduino = new ArduinoProtocol();
+
+	// Kommunikation starten
+	_arduino->Run();
+
 	// RS232-Verbindung herstellen
 	_rs232 = new RS232();
 
 	// Motorgeschwindigkeitsanpassung starten
 	_controlMotorSpeedThread = new std::thread(&MotorControl::ControlMotorSpeedWrapper, this);
+
+	// Tastendruckverarbeitung starten
+	_computeInputButtonsThread = new std::thread(&MotorControl::ComputeInputButtonsWrapper, this);
 
 	// Server starten
 	_server = new TCPServer(4242, ComputeClientCommandWrapper, static_cast<void *>(this));
@@ -83,6 +92,9 @@ void MotorControl::Stop()
 		throw THOMASException("Fehler: Die Motorsteuerung ist nicht aktiv!");
 	_running = false;
 
+	// Arduino-Kommunikation stoppen
+	delete _arduino;
+
 	// Server herunterfahren
 	_server->EndListen();
 	delete _server;
@@ -90,6 +102,10 @@ void MotorControl::Stop()
 	// Motorgeschwindigkeitsanpassung beenden
 	_controlMotorSpeedThread->join();
 	delete _controlMotorSpeedThread;
+
+	// Tastendruckverarbeitung beenden
+	_computeInputButtonsThread->join();
+	delete _computeInputButtonsThread;
 
 	// RS232-Verbindung beenden
 	delete _rs232;
@@ -176,6 +192,50 @@ void MotorControl::ControlMotorSpeed()
 
 	// Beide Motoren direkt anhalten
 	SendMotorSpeed(MBOTH, 0);
+}
+
+void MotorControl::ComputeInputButtons()
+{
+	// Auf Initialisierung der Joystick-Daten-Arrays warten
+	while(!_joystickDataOK)
+		usleep(100000);
+
+	// Tastendrücke bis zum Beenden der Motorsteuerung verarbeiten
+	bool kill_server = false; // Beenden-Anfrage
+	int cam_servo_direction = 0; // Richtung in den der Servo gedreht werden soll
+	while(_running)
+	{
+		// Joystick-Daten sperren
+		_joystickMutex->lock();
+		{
+			// Auf Tastendrücke prüfen
+			{
+				// Not-Aus-Schalter abfragen
+				kill_server = (_joystickButtons[6] == 1);
+
+				// Servosteuerung nach Wert des kleinen Steuerknüppels
+				cam_servo_direction = _joystickAxis[4] < 0 ? -1 : _joystickAxis[4] > 0 ? 1 : 0;
+			}
+		}
+		_joystickMutex->unlock();
+
+		// Soll der Server beendet werden?
+		if(kill_server)
+		{
+			// Beide Motoren direkt anhalten
+			SendMotorSpeed(MBOTH, 0);
+
+			// Fehler werfen und somit das Programm beenden
+			throw THOMASException("Info: Der Server wurde durch einen der Clienten beendet.");
+		}
+
+		// Kamera-Servo drehen?
+		if(cam_servo_direction != 0)
+		{
+			// Kamera drehen
+			_arduino->ChangeCamPosition(0, cam_servo_direction * 2);
+		}
+	}
 }
 
 void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)

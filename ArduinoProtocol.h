@@ -101,7 +101,7 @@ namespace THOMAS
 		int SetCamPosition(unsigned char camera, unsigned char degree);
 
 		// Kamera um einen bestimmten Wert drehen
-		int ChangeCamPosition(unsigned char camera, unsigned char degree);
+		int ChangeCamPosition(unsigned char camera, int degree);
 
 		// Funktion zum Anpingen des Arduinos (Bei einem Fehlschlag stoppt das Programm.)
 		void Heartbeat();

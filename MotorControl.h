@@ -15,6 +15,9 @@ Verzögerte Beschleunigungen werden eingesetzt, um abrupte Geschwindigkeitsände
 // TCPServer-Klasse
 #include "TCPServer.h"
 
+// ArduinoProtocol-Klasse
+#include "ArduinoProtocol.h"
+
 // C++-mutex-Klasse
 #include <mutex>
 
@@ -69,6 +72,9 @@ namespace THOMAS
 		// Gibt an, ob die Steuerung aktiv ist.
 		bool _running = false;
 
+		// Arduino-Kommunikation
+		ArduinoProtocol *_arduino;
+
 		// Die RS232-Verbindung zur Motorsteuerung.
 		RS232 *_rs232;
 
@@ -77,7 +83,10 @@ namespace THOMAS
 
 		// Der Motorgeschwindigkeits-Anpassungs-Thread.
 		std::thread *_controlMotorSpeedThread;
-		
+
+		// Der Tastenverarbeitungs-Thread.
+		std::thread *_computeInputButtonsThread;
+
 		// Speichert die jeweils letzten gesendeten Motorgeschwindigkeiten.
 		// Hiermit werden die benötigten Drehrichtungswechsel-Befehle der Motoren realisiert.
 		// Inhalt:
@@ -155,6 +164,17 @@ namespace THOMAS
 		static void ControlMotorSpeedWrapper(MotorControl *obj)
 		{
 			obj->ControlMotorSpeed();
+		}
+
+		// Reagiert auf Befehle durch die Eingabetasten des Joysticks
+		void ComputeInputButtons();
+
+		// Wrapper, um die ComputeInputButtons-Memberfunktion sauber an einen separaten Thread zu übergeben. Wird nur von Run() benutzt.
+		// Parameter:
+		// -> obj: Das zur ComputeInputButtons-Funktion gehörende MotorControl-Objekt.
+		static void ComputeInputButtonsWrapper(MotorControl *obj)
+		{
+			obj->ComputeInputButtons();
 		}
 
 	public:

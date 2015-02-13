@@ -246,8 +246,20 @@ int ArduinoProtocol::SetCamPosition(unsigned char camera, unsigned char degree)
 }
 
 // Position der Kamera um einen bestimmten Winkel drehen
-int ArduinoProtocol::ChangeCamPosition(unsigned char camera, unsigned char degree)
+int ArduinoProtocol::ChangeCamPosition(unsigned char camera, int degree)
 {
+	// Richtung
+	unsigned char direction = degree < 0 ? 0 : 1;
+
+	// Vorzeichen entfernen
+	if (direction == 0) {
+		// Mit -1 multiplizieren
+		degree = degree * (-1);
+	}
+
+	// Gradzahl korrigieren
+	degree = degree < 0 ? 0 : degree > 180 ? 180 : degree;
+
 	// Speicher für die Daten
 	int data;
 
@@ -259,11 +271,12 @@ int ArduinoProtocol::ChangeCamPosition(unsigned char camera, unsigned char degre
 		// 0 = Kameraservo
 		// x = KameraID
 		// 1 = Drehe um Wert
-		// y = Grad
-		UBYTE package[5] = {3, 0, camera, 1, degree};
+		// y = Richtung
+		// z = Grad
+		UBYTE package[6] = {3, 0, camera, 1, direction, (unsigned char)degree};
 
 		// Sende das Paket an den Arduino
-		arduinoCom->Send(package, 5);
+		arduinoCom->Send(package, 6);
 
 		// Auf eine Antwort warten und den neuen Winkel zurückgeben
 		data = (int) arduinoCom->Receive()[0];
