@@ -298,9 +298,7 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 		default:
 		{
 			// Fehler
-			std::ostringstream err;
-			err << "Fehler: Das erhaltene Kommandobyte (" << data[0] << ") ist ungueltig!";
-			throw THOMASException(err.str());
+			std::cout << "\033[1;31m" << "[WARNUNG]" << "\033[0;1m " << "Das erhaltene Kommandobyte (" << data[0] << ") ist ungueltig!" << "\033[0m " << std::endl;
 		}
 	}
 }
