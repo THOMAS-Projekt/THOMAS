@@ -1,0 +1,124 @@
+\documentclass{article}
+\usepackage[fleqn]{amsmath}
+\usepackage{tikz}
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage{listings}
+
+\definecolor{srcbggray}{rgb}{0.95,0.95,0.95}
+
+\lstset{
+    language=C++,
+    basicstyle=\small\ttfamily,
+    backgroundcolor=\color{srcbggray},
+    commentstyle=\color{olive},
+    showstringspaces=false,
+    keywordstyle=\color{blue}\bfseries,
+    morekeywords={align,begin},
+    breaklines=true
+}
+
+
+\begin{document}
+
+\begin{center}
+{\large\textbf{T.H.O.M.A.S.\\Umrechnung von Joystick-Auslenkungen in Motorwerte}}
+\end{center}
+
+\begin{tikzpicture}
+    \draw[very thin,color=lightgray] (-4.2,-4.2) grid (4.2,4.2);
+    \draw[->] (-4,0) -- (4.2,0) node[right] {$x$};
+    \draw[->] (0,-4.0) -- (0,4.2) node[above] {$z$};
+    \draw (-4,1pt) -- (-4,-3pt)
+		node[anchor=north] {$-a$};
+	\draw (4,1pt) -- (4,-3pt)
+		node[anchor=north] {$a$};
+   	\draw (1pt,4) -- (-3pt,4) 
+   		node[anchor=east] {$a$};
+   	\draw (-1pt,-4) -- (3pt,-4) 
+   	   		node[anchor=west] {$-a$};
+    
+    % Direkte Joystick-Umrechnung
+    \draw[blue] (4,0) -- (0,4) -- (-4,0) -- (0,-4) -- cycle;
+    \fill[color=blue, opacity=0.05] (4,0) -- (0,4) -- (-4,0) -- (0,-4) -- cycle;
+    
+    % Joystick-Bereich
+    \draw[red] (4,4) -- (-4,4) -- (-4,-4) -- (4,-4) -- cycle;
+    \fill[color=red, opacity=0.05] (4,0) -- (4,4) -- (0,4) -- cycle;
+    \fill[color=red, opacity=0.05] (0,4) -- (-4,4) -- (-4,0) -- cycle;
+    \fill[color=red, opacity=0.05] (-4,0) -- (-4,-4) -- (0,-4) -- cycle;
+    \fill[color=red, opacity=0.05] (0,-4) -- (4,-4) -- (4,0) -- cycle;
+    
+    \draw[thick,->,olive] (0,0) -- (1.25,3.75);
+    \fill[violet] (1,3) circle (2pt);
+    \draw[violet,dotted,thick] (0,3) -- (1,3) -- (1,0);
+    
+    \draw (4,0)
+    	node[anchor=east] {$\begin{pmatrix}m\\-m\end{pmatrix}$};
+    \draw (0,4)
+        node[anchor=west] {$\begin{pmatrix}m\\m\end{pmatrix}$};
+    \draw (-4,0)
+        node[anchor=east] {$\begin{pmatrix}-m\\m\end{pmatrix}$};
+    \draw (0,-4)
+   		node[anchor=east] {$\begin{pmatrix}-m\\-m\end{pmatrix}$};
+   		
+    \draw (1.9,1.9) -- (2.1,2.1)
+    	node[anchor=west] {$\begin{pmatrix}m\\0\end{pmatrix}$};
+    \draw (-1.9,1.9) -- (-2.1,2.1)
+       	node[anchor=east] {$\begin{pmatrix}0\\m\end{pmatrix}$};
+    \draw (-1.9,-1.9) -- (-2.1,-2.1)
+       	node[anchor=east] {$\begin{pmatrix}-m\\0\end{pmatrix}$};
+    \draw (1.9,-1.9) -- (2.1,-2.1)
+        node[anchor=west] {$\begin{pmatrix}0\\-m\end{pmatrix}$};
+    
+    % \draw (1.1,2.5) node[right,blue] {$f(x)$};
+\end{tikzpicture}\\
+\\
+\\
+$a$ ist die Maximalauslenkung des Joysticks. Da dieser Werte zwischen -32767 und 32767 annehmen kann, ist $a=32767$.\\
+\\
+Die Motorgeschwindigkeit lässt sich als Vektor angeben: $v=\begin{pmatrix}v_1\\v_2\end{pmatrix}$, wobei $-m\leq v_1,v_2\leq m$.\\
+$v_1$ sei hierbei der linke Motor, $v_2$ der rechte.\\
+\\
+$m$ ist hierbei der Maximalwert der Motorsteuerung, also $m=255$, da die Motoren nur Werte zwischen einschließlich -255 und 255 akzeptieren.\\
+\\
+Die Joystick-Auslenkungen im blau eingefärbten Bereich lassen sich nun leicht in Motorgeschwindigkeiten umrechnen:
+\[
+f\begin{pmatrix}x\\z\end{pmatrix}=\frac{m}{a}\cdot\begin{pmatrix}x+z\\-x+z\end{pmatrix}
+\]
+\\
+Ein größeres Problem stellt der rot markierte Bereich dar, denn für diesen definiert unser Modell keine Geschwindigkeitswerte, bzw. erzeugt ungültige.\\
+Der einfachste Weg ist hier, sämtliche Auslenkungen im roten Bereich einfach auf den blauen Bereich zu reduzieren. Dazu wird einfach eine Linie (olivgrün in der Zeichnung) zum Ursprung gezogen und der Geschwindigkeitswert genommen, der am Schnittpunkt (violetter Punkt) der Linie mit der Grenze des blauen Bereichs liegt.\\
+Das führt dann zu folgender Berechnung der Motorgeschwindigkeit für alle Auslenkungen $\begin{pmatrix}x\\z\end{pmatrix}$, die nicht im blauen Bereich liegen:
+\[
+g\begin{pmatrix}x\\z\end{pmatrix}=\frac{m}{|x|+|z|}\cdot\begin{pmatrix}x+z\\-x+z\end{pmatrix}
+\]
+\\
+Offensichtlich wird $g$ also nur verwendet, wenn der Joystick im \glqq roten Bereich\grqq{} ist, ansonsten $f$. Wie kann also erkannt werden, wann $f$ und wann $g$ verwendet werden muss?\\
+Die Antwort ist bereits in der Formel von $g$: Wenn die Summe $|x|+|z|$ größer als $a$ wird, befinden wird uns im roten Bereich.\\
+Warum? Betrachte die blauen Linien, die die Kanten des blauen Bereichs darstellen.\\
+Auf diesen Linien gilt immer: $|x|+|z|=a$.\\
+Innerhalb der blauen Fläche gilt: $|x|+|z|<a$.\\
+Die Betragsstriche sind hier erforderlich, damit bei den negativen Koordinaten keine merkwürdigen Dinge geschehen.\\
+\\
+Und damit wäre der mathematische Teil erledigt, schauen wir also einmal kurz ins Programm:\\
+\\
+{\footnotesize \textbf{[MotorControl.h]}}
+\begin{lstlisting}
+const float _joystickMaxAxis = 32767.0f; // = a
+const float _joystickScale = 255.0f; // = m
+const float _joystickNoPowerZone = _joystickScale * 0.1f;
+const float _joystickAxisInvConv = _joystickScale / _joystickMaxAxis; // = m/a
+\end{lstlisting}
+\_joystickNoPowerZone ist der Bereich, in dem die R-Achse berücksichtigt wird. Der Faktor 0.1 ist hier gewählt, damit die R-Achse bei bis zu 10\% Joystick-Auslenkung berücksichtigt werden kann (der Joystick kann nur schwierig ganz exakt in der Mitte gehalten werden, deshalb die 10\% Toleranz).\\
+\\
+Der restliche Code sollte selbsterklärend sein, wenn statt der mathematischen Symbole die gegebenen Variablennamen eingesetzt werden.\\
+\\
+Ein Hinweis zur \glqq Korrektursumme\grqq{}: Hierbei handelt es sich einfach um die Summe $|x|+|z|$.\\
+{\footnotesize \textbf{[MotorControl.cpp]}}
+\begin{lstlisting}
+// Joystick-Korrektursumme berechnen
+corrSum = static_cast<float>(abs(_joystickAxis[0]) + abs(_joystickAxis[1]));
+
+\end{lstlisting}
+\end{document}

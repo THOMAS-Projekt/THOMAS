@@ -1,0 +1,18 @@
+﻿-- THOMAS-SERVER-PROTOKOLL --
+Dieses Datenübertragungsprotokoll definiert die Kommunikation zwischen Client-Joystick [C] und dem Server [S].
+
+
+~ Kommunikation:
+
+=> [C] Heartbeat
+	=> 1. [BYTE]: = 0, Kommandobyte.
+
+=> [C] Übermittlung der Joystick-Daten: JOYSTICK_HEADER
+	=> 1. [BYTE]: = 1, Kommandobyte.
+	=> 2. [BYTE]: Anzahl der Joystick-Achsen.
+	=> 3. [BYTE]: Anzahl der Joystick-Buttons.
+
+=> [C] Übermittlung eines Joystick-Datensatzes: JOYSTICK_DATA [vorher: JOYSTICK_HEADER]
+	=> 1. [BYTE]: = 2, Kommandobyte.
+	=> 2. [short{JOYSTICK_HEADER.2}]: Einzelne Joystick-Achsenwerte.
+	=> 3. [BYTE{JOYSTICK_HEADER.3}]: Einzelne Joystick-Buttonwerte.
