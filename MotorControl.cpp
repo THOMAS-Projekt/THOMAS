@@ -63,13 +63,13 @@ void MotorControl::Run()
 	_joystickMutex = new std::mutex();
 
 	// Arduino-Verbindung herstellen
-	//_arduino = new ArduinoProtocol();
+	_arduino = new ArduinoProtocol();
 
 	// Kommunikation starten
-	//_arduino->Run();
+	_arduino->Run();
 
 	// RS232-Verbindung herstellen
-	//_rs232 = new RS232();
+	_rs232 = new RS232();
 
 	// Motorgeschwindigkeitsanpassung starten
 	_controlMotorSpeedThread = new std::thread(&MotorControl::ControlMotorSpeedWrapper, this);
@@ -105,7 +105,7 @@ void MotorControl::Stop()
 	delete _computeInputButtonsThread;
 
 	// RS232-Verbindung beenden
-	//delete _rs232;
+	delete _rs232;
 }
 
 void MotorControl::ControlMotorSpeed()
@@ -230,7 +230,7 @@ void MotorControl::ComputeInputButtons()
 		if(cam_servo_direction != 0)
 		{
 			// Kamera drehen
-			//_arduino->ChangeCamPosition(0, cam_servo_direction * 2);
+			_arduino->ChangeCamPosition(0, cam_servo_direction * 2);
 		}
 	}
 }
@@ -313,13 +313,13 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 		{
 			params[0] = MRIGHT;
 			params[1] = FORWARDS;
-			//_rs232->Send(5, params, 2);
+			_rs232->Send(5, params, 2);
 		}
 		else if(_lastSpeed[MRIGHT_ARR] >= 0 && speed < 0)
 		{
 			params[0] = MRIGHT;
 			params[1] = BACKWARDS;
-			//_rs232->Send(5, params, 2);
+			_rs232->Send(5, params, 2);
 		}
 
 		if(_lastSpeed[MRIGHT_ARR] != speed)
@@ -327,7 +327,7 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 			// Geschwindigkeit senden (ohne Vorzeichen)
 			params[0] = MRIGHT;
 			params[1] = static_cast<BYTE>(abs(speed));
-			//_rs232->Send(2, params, 2);
+			_rs232->Send(2, params, 2);
 		}
 		_lastSpeed[MRIGHT_ARR] = speed;
 	}
@@ -340,13 +340,13 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 		{
 			params[0] = MLEFT;
 			params[1] = FORWARDS;
-			//_rs232->Send(5, params, 2);
+			_rs232->Send(5, params, 2);
 		}
 		else if(_lastSpeed[MLEFT_ARR] >= 0 && speed < 0)
 		{
 			params[0] = MLEFT;
 			params[1] = BACKWARDS;
-			//_rs232->Send(5, params, 2);
+			_rs232->Send(5, params, 2);
 		}
 
 		if(_lastSpeed[MLEFT_ARR] != speed)
@@ -354,7 +354,7 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 			// Geschwindigkeit senden (ohne Vorzeichen)
 			params[0] = MLEFT;
 			params[1] = static_cast<BYTE>(abs(speed));
-			//_rs232->Send(2, params, 2);
+			_rs232->Send(2, params, 2);
 		}
 		_lastSpeed[MLEFT_ARR] = speed;
 	}
