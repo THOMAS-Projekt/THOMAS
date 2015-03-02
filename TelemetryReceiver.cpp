@@ -67,7 +67,6 @@ void TelemetryReceiver::Run(int videoDeviceID)
 	// Neuen Framesverarbeitungs-Thread erstellen
 	std::thread caputeFrameThread(&TelemetryReceiver::CaptureFrameThread, this);
 	caputeFrameThread.join();
-
 }
 
 void TelemetryReceiver::CaptureFrameThread()
@@ -75,9 +74,9 @@ void TelemetryReceiver::CaptureFrameThread()
 	// Neue Frame Matrix
 	cv::Mat frame;
 
-	// Wiederhole bis Windows Sicher wird => ewig
-	while(true){
-
+	// Wiederhole bis Windows sicher wird
+	while(true)
+	{
 		// Neuen Frame erstellen
 		_videoCapture >> frame;
 
@@ -88,8 +87,8 @@ void TelemetryReceiver::CaptureFrameThread()
 		param[0] = CV_IMWRITE_JPEG_QUALITY;
 
 		// Durch alle Clients iterieren und Frame senden
-		for(auto &client : UDPClientList){
-
+		for(auto &client : UDPClientList)
+		{
 			// Neuer Buffer
 			std::vector<uchar> buff;
 
@@ -97,7 +96,7 @@ void TelemetryReceiver::CaptureFrameThread()
 			cv::Mat clientFrame;
 
 			// Bilder auf die gewünschte Größe anpassen
-			cv::resize(frame,clientFrame, cv::Size(1280*((float) client.second.GetFrameSize()/100),720*((float) client.second.GetFrameSize()/100)));
+			cv::resize(frame,clientFrame, cv::Size(CAMERA_WIDTH*((float) client.second.GetFrameSize()/100),CAMERA_HEIGHT*((float) client.second.GetFrameSize()/100)));
 
 			// Kompressionsrate setzten
 			param[1] = client.second.GetFrameQuality();
@@ -118,6 +117,7 @@ void TelemetryReceiver::CaptureFrameThread()
 					client.second.Send(newBuff);
 				}
 
+				// Entspricht "i" die Buffersize?
 				if(i == buff.size() - 1)
 				{
 					// Array mit restlichen Bytes erstellen
@@ -133,7 +133,7 @@ void TelemetryReceiver::CaptureFrameThread()
 
 void TelemetryReceiver::OnClientStatusChange(int clientID, int status, const char *ip)
 {
-	// Status "switchen"
+	// Status analysieren
 	switch(status)
 	{
 		// Client connected?
@@ -171,7 +171,6 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 	{
 		// Headerdaten => Kommandobyte, Port
 		case 1: {
-
 			// Bytes zu Short (uint16)
 			unsigned short port = (data[1] << 8) | data[2];
 
@@ -181,10 +180,12 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 			break;
 		}
 
+		// Statusfeld => Kommandobyte, ID des Feldes
 		case 2:
 		{
 			switch(data[1])
 			{
+				// Anforderung der CPU-Last
 				case FIELD_CPU:
 				{
 					// CPU-Last Sring erstellen
@@ -206,7 +207,7 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 					break;
 				}
 
-
+				// Anforderung des Rams
 				case FIELD_MEMORY:
 				{
 					// RAM-Nutzungs Sring erstellen
@@ -228,6 +229,7 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 					break;
 				}
 
+				// Anforderung der Festplattennutzung
 				case FIELD_DISK:
 				{
 					// Festplatten-Nutzungs Sring erstellen
@@ -249,27 +251,27 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 					break;
 				}
 
+				// Anforderung der SSID
 				case FIELD_SSID:
 				{
 					// TODO: Implementieren
 					break;
 				}
 
+				// Anforderung der Signal-Stärke
 				case FIELD_SIGNAL:
 				{
 					// TODO: Implementieren
 					break;
 				}
 
+				// Anforderung der Bandbreite
 				case FIELD_BANDWIDTH:
 				{
 					// TODO: Implementieren
 					break;
 				}
-
 			}
-
-
 		}
 
 		case 3:
@@ -278,10 +280,7 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 			UDPClientList[clientID].SetFrameQuality((data[1] < 2) ? 1 : (data[1] > 100) ? 100 : data[1]);
 			UDPClientList[clientID].SetFrameSize((data[2] < 2) ? 1 : (data[2] > 100) ? 100 : data[2]);
 		}
-
 	}
-
-
 }
 
 std::vector<BYTE> TelemetryReceiver::GenerateByteArray(int cmdByte, int fieldID, std::string text)
@@ -304,6 +303,3 @@ std::vector<BYTE> TelemetryReceiver::GenerateByteArray(int cmdByte, int fieldID,
 
 	return buff;
 }
-
-
-

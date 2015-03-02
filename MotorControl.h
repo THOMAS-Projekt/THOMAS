@@ -139,7 +139,7 @@ namespace THOMAS
 		// -> speed: Die neue Motorgeschwindigkeit (-255 bis 255).
 		void SendMotorSpeed(int motor, short speed);
 
-		// Neuer Client verbunden	
+		// Neuer Client verbunden
 		void OnClientStatusChange(int clientID, int status, const char* ip);
 
 		// Verarbeitet vom Server empfangene Steuerbefehle.
@@ -180,8 +180,12 @@ namespace THOMAS
 			obj->ComputeInputButtons();
 		}
 
+		// Wrapper, um die OnClientStatusChange-Memberfunktion sauber an den TCP Server zu übergeben
+		// Parameter:
+		// -> clientID: ID eines Client Threads zur Referenzierung
+		// -> Status: 0 = Connect, 1 = Disconnect
 		static void OnClientStatusChangeWrapper(int clientID, int status, void *obj, const char *ip)
-		{	
+		{
 			(reinterpret_cast<MotorControl *>(obj))->OnClientStatusChange(clientID, status, ip);
 		}
 

@@ -32,7 +32,6 @@ using namespace THOMAS;
 
 RS232::RS232()
 {
-	// TODO: ÄNDERN TESTING
 	// Anschlusshandle erstellen, RS232-Anschluss (ttyS0) laden
 	_handle = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NDELAY);
 
@@ -83,7 +82,7 @@ void RS232::Send(BYTE com, BYTE *params, int paramCount)
 {
 	// Befehlsarray erstellen (3 Sonderbytes + Kommandobyte + Parameter)
 	BYTE *data = new BYTE[4 + paramCount];
-	
+
 	// Die beiden Steuerbytes setzen
 	data[0] = 35;
 	data[1] = 35;

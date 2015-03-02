@@ -240,12 +240,9 @@ void MotorControl::ComputeInputButtons()
 
 void MotorControl::ComputeClientCommand(BYTE *data, int dataLength, int clientID)
 {
-
 	// Kommandobyte prüfen
 	switch(data[0])
 	{
-			std::cout << "Hallo1" << std::endl;
-			std::fflush(stdout);
 		// JOYSTICK_HEADER
 		case 1:
 		{
@@ -278,7 +275,6 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength, int clientID
 		// JOYSTICK_DATA
 		case 2:
 		{
-
 			// Wurde der Joystick-Daten-Header empfangen?
 			if(!_joystickDataOK)
 				throw THOMASException("Es wurde noch kein JOYSTICK_HEADER-Kommando empfangen!");
@@ -293,7 +289,6 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength, int clientID
 				memcpy(_joystickButtons, &data[1 + sizeof(short) * _joystickAxisCount], sizeof(BYTE) * _joystickButtonCount);
 			}
 			_joystickMutex->unlock();
-
 
 			// Fertig
 			break;
@@ -370,5 +365,5 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 
 void MotorControl::OnClientStatusChange(int clientID, int status, const char *ip)
 {
-	// TODO: Was weiß ich?
+	// TODO: Optionale implementierung => Wenn sich ein Client verbindet
 }

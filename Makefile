@@ -8,6 +8,12 @@ all: main.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o TH
 main.o: main.cpp
 	g++ -c main.cpp $(CPPARGS)
 
+test: test.o TCPServer.o
+	g++ TCPServer.o test.o -o test $(LINKERARGS)
+
+test.o: test.cpp
+	g++ -c test.cpp $(CPPARGS)
+
 RS232.o: RS232.cpp RS232.h
 	g++ -c RS232.cpp $(CPPARGS)
 

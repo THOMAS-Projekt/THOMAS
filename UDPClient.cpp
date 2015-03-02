@@ -31,26 +31,27 @@ using namespace THOMAS;
 // Ehthält u.a. die memcpy Funktion
 #include <string.h>
 
+/* FUNKTIONEN */
 
 UDPClient::UDPClient()
 {
 
 }
 
-void UDPClient::Send(std::vector<unsigned char> buff){
+void UDPClient::Send(std::vector<unsigned char> buff)
+{
+	// Buffer Array erstellen
+	BYTE data[buff.size()];
 
-	// JA das ist schlecht, ich war bis her nur zu Faul es anders zu machen -> Erstmal zum debuggen
-	char data[buff.size()];
-	for(int i = 0; i < buff.size(); i++){
-		data[i] = buff.at(i);
-	}
+	// Daten in C-Array kopieren
+	std::copy(buff.begin(), buff.end(), data);
 
+	// Daten an UDP-Server senden
 	sendto(_socket,data,buff.size(),0,(struct sockaddr *)&serverAddress,sizeof(serverAddress));
-
 }
 
-void UDPClient::CreateUDPClient(int port){
-
+void UDPClient::CreateUDPClient(int port)
+{
 	// Status ausgeben
 	std::cout << "\033[32m" << "[Status]" << " UDPClient erfolgreich erstellt! IP: " << _ip << " Port: " << port << "\033[0m" << std::endl;
 
@@ -70,16 +71,13 @@ void UDPClient::CreateUDPClient(int port){
 	// Die IP in die serverAddress Struktur kopieren
 	memcpy(reinterpret_cast<char *>(&serverAddress.sin_addr.s_addr), reinterpret_cast<char *>(serverData->h_addr_list[0]), serverData->h_length);
 
-
 	// Alles ok?
 	if(_socket == -1)
 	{
 		// Nicht gut!
 		throw THOMASException("Beim erstellen des Sockets ist ein Fehler aufgetreten");
 	}
-
 }
-
 
 // Getter & Setter
 
@@ -107,5 +105,3 @@ int UDPClient::GetFrameQuality()
 {
 	return _frameQuality;
 }
-
-

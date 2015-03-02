@@ -15,7 +15,6 @@ namespace THOMAS
 	class StatusInformation
 	{
 	private:
-
 		// Summe eine Arrays errechnen
 		int CalculateSum(std::vector<int> data, int start, int end);
 
@@ -23,7 +22,6 @@ namespace THOMAS
 		std::vector<int> GetCPUData();
 
 	public:
-
 		// Konstruktor
 		StatusInformation();
 

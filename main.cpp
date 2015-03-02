@@ -34,8 +34,8 @@ int main(int argc, char **argv)
 	MotorControl *motorControl = new MotorControl();
 	motorControl->Run();
 
-	//TelemetryReceiver *teleRecv = new TelemetryReceiver();
-	//teleRecv->Run();
+	TelemetryReceiver *teleRecv = new TelemetryReceiver();
+	teleRecv->Run();
 
 	// Programm laufen lassen, Prozessor nicht unnötig belasten (alles läuft in separaten Threads)
 	// TODO: Programm-Befehle per Tastatur etc.

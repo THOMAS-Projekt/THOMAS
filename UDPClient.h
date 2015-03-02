@@ -11,6 +11,8 @@ Enthält u.a. Funktionen zum erstellen von UDPClients
 // Enhält IP Strukturen
 #include <arpa/inet.h>
 
+#define BYTE char
+
 namespace THOMAS {
 
 	class UDPClient

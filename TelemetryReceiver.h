@@ -38,6 +38,9 @@
 #define FIELD_SIGNAL 4
 #define FIELD_BANDWIDTH 5
 
+#define CAMERA_WIDTH 1280
+#define CAMERA_HEIGHT 720
+
 namespace THOMAS {
 
 	class TelemetryReceiver
@@ -61,6 +64,7 @@ namespace THOMAS {
 		// Liste mit ClientIDs
 		std::map<int, UDPClient> UDPClientList;
 
+		// Array mit den Parametern für OpenCV
 		std::vector<int> param = std::vector<int>(2);
 
 		// TCP Daten verarbeiten

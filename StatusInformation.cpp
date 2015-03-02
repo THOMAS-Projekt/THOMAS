@@ -31,7 +31,7 @@ std::vector<int> StatusInformation::GetMemoryInfo()
 	// Array erstellen
 	std::vector<int> memoryData(3);
 
-	// Werte ermitteln 
+	// Werte ermitteln
 	long numPages = sysconf(_SC_PHYS_PAGES)/1024;
 	long pageSize = sysconf(_SC_PAGESIZE)/1024;
 	long freePages = sysconf( _SC_AVPHYS_PAGES)/1024;
@@ -40,7 +40,8 @@ std::vector<int> StatusInformation::GetMemoryInfo()
 	memoryData[0] = (int) (numPages * pageSize);
 	memoryData[1] = (int) (pageSize * freePages);
 	memoryData[2] = (int) ((numPages * pageSize) - (pageSize * freePages));
-   	
+
+	// Ram-Infos als Array zurückgeben
 	return memoryData;
 }
 
@@ -56,13 +57,11 @@ int StatusInformation::GetDiskSpace()
 	return (((double)buff.f_bavail * buff.f_bsize) / 1048576 );
 }
 
-
 int StatusInformation::GetCPUTemperature()
 {
-
 	// Datei-Handler
 	std::ifstream CPUTemperatureFile;
-	
+
 	// Input String
 	std::string input;
 
@@ -75,7 +74,7 @@ int StatusInformation::GetCPUTemperature()
 		// Windoof?
 		std::cout << "Konnte Datei nicht öffnen!" << std::endl;
 	}
-	
+
 	// Wert lesen
 	std::getline(CPUTemperatureFile, input);
 
@@ -87,13 +86,14 @@ int StatusInformation::CalculateSum(std::vector<int> data, int start, int end)
 {
 	// Summe initialisieren
 	int sum = 0;
-	
+
 	// Array auslesen und addieren
 	for(int i = start; i < end; i++)
 	{
 		sum += data[i];
 	}
 
+	// Gibt die errechnete Summe zurück
 	return sum;
 }
 
@@ -115,7 +115,7 @@ float StatusInformation::GetCPUUsage()
 
 	// CPU Last berrechnen
 	float cpuLoad = ((float) (calculationData[3] - calculationData[1]) / (float) (calculationData[2] - calculationData[0])) * 100;
-	
+
 	return cpuLoad;
 }
 
@@ -151,6 +151,7 @@ std::vector<int> StatusInformation::GetCPUData()
 	// Datei schließen
 	cpuStats.close();
 
+	// CPU-Daten zurückgeben
 	return cpuData;
 }
 

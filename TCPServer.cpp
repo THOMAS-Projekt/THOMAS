@@ -105,7 +105,6 @@ void TCPServer::EndListen()
 
 void TCPServer::Listen()
 {
-
 	// Client-Warteschlange erstellen (Länge: 5)
 	if(listen(_socket, 5) == -1)
 	{
@@ -161,16 +160,15 @@ void TCPServer::ReceiveClient(int clientSocket, const char* ip)
 	BYTE *buffer = new BYTE[bufferLength];
 	while(_listening)
 	{
-
 		// Daten empfangen, währenddessen blockieren
 		dataLength = recv(clientSocket, buffer, bufferLength, 0);
+
 		// Ist ein Fehler aufgetreten?
 		if(dataLength == -1)
 		{
 			// Nicht gut
 			throw THOMASException("Fehler beim Empfangen von Client-Daten!");
 		}
-
 
 		// Ist die Verbindung abgebrochen?
 		if(dataLength == 0)
@@ -181,7 +179,6 @@ void TCPServer::ReceiveClient(int clientSocket, const char* ip)
 
 		// Daten verarbeiten
 		_computeReceivedDataFunction(buffer, dataLength, _cRDFParams, clientSocket);
-
 	}
 
 	// Client-Socket schließen
