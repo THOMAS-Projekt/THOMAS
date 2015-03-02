@@ -2,6 +2,7 @@
 -- MOTOR-CONTROL-KLASSE :: IMPLEMENTIERUNG --
 */
 
+
 /* INCLUDES */
 
 // Klassenheader
@@ -27,6 +28,7 @@ using namespace THOMAS;
 // Hier wird die usleep()-Funktion benötigt.
 #include <unistd.h>
 
+
 /* FUNKTIONEN */
 
 MotorControl::MotorControl()
@@ -50,6 +52,7 @@ MotorControl::~MotorControl()
 
 void MotorControl::Run()
 {
+
 	// Läuft die Steuerung schon?
 	if(_running)
 		throw THOMASException("Fehler: Die Motorsteuerung ist bereits aktiv!");
