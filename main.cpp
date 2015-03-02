@@ -34,6 +34,7 @@ int main(int argc, char **argv)
 	MotorControl *motorControl = new MotorControl();
 	motorControl->Run();
 
+	// TelemetryReceiver starten
 	TelemetryReceiver *teleRecv = new TelemetryReceiver();
 	teleRecv->Run();
 

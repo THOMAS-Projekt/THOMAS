@@ -166,7 +166,7 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 	if(UDPClientList.find(clientID) == UDPClientList.end())
 		throw THOMASException("Die Client ID konnte nicht gefunden werden");
 
-	// Daten "switchen"
+	// Daten analysieren
 	switch(data[0])
 	{
 		// Headerdaten => Kommandobyte, Port
@@ -272,6 +272,7 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 					break;
 				}
 			}
+			break;
 		}
 
 		case 3:
@@ -279,6 +280,8 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 			// Daten anpassen und setzten
 			UDPClientList[clientID].SetFrameQuality((data[1] < 2) ? 1 : (data[1] > 100) ? 100 : data[1]);
 			UDPClientList[clientID].SetFrameSize((data[2] < 2) ? 1 : (data[2] > 100) ? 100 : data[2]);
+
+			break;
 		}
 	}
 }
