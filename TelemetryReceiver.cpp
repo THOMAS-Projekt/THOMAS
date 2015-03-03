@@ -31,6 +31,10 @@ using namespace THOMAS;
 // C-String-Klasse enthält u.a. die strcpy-Funktion
 #include <cstring>
 
+// UNIX-Funktionen [Non-Standard]
+// In diesem Header ist u.a. die usleep()-Funktion definiert.
+#include <unistd.h>
+
 /* FUNKTIONEN */
 
 TelemetryReceiver::TelemetryReceiver()
@@ -77,6 +81,14 @@ void TelemetryReceiver::CaptureFrameThread()
 	// Wiederhole bis Windows sicher wird
 	while(true)
 	{
+		// Ist Client Liste leer?
+		if(UDPClientList.empty())
+		{
+			// Warten -> CPU nicht unnötig belasten
+			usleep(10000);
+			continue;
+		}
+
 		// Neuen Frame erstellen
 		_videoCapture >> frame;
 
@@ -89,6 +101,12 @@ void TelemetryReceiver::CaptureFrameThread()
 		// Durch alle Clients iterieren und Frame senden
 		for(auto &client : UDPClientList)
 		{
+
+			// Läuft der Server bereits, oder wurde er nur instanziert
+			if(!client.second.GetServerRunning())
+				// Fortfahren
+				continue;
+
 			// Neuer Buffer
 			std::vector<uchar> buff;
 
@@ -211,7 +229,7 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 				case FIELD_MEMORY:
 				{
 					// RAM-Nutzungs Sring erstellen
-					std::string memoryUsage = std::to_string(_statusInformation->GetMemoryInfo()[0]);
+					std::string memoryUsage = std::to_string(_statusInformation->GetMemoryInfo()[2]);
 					memoryUsage += "MB\n";
 
 					// Informationen in Vector Laden
@@ -234,7 +252,7 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 				{
 					// Festplatten-Nutzungs Sring erstellen
 					std::string diskUsage = std::to_string(_statusInformation->GetDiskSpace());
-					diskUsage += "%\n";
+					diskUsage += "MB\n";
 
 					// Informationen in Vector Laden
 					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_DISK, diskUsage));

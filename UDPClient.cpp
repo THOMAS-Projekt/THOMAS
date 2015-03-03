@@ -77,6 +77,9 @@ void UDPClient::CreateUDPClient(int port)
 		// Nicht gut!
 		throw THOMASException("Beim erstellen des Sockets ist ein Fehler aufgetreten");
 	}
+
+	// Running auf True setzten
+	_running = true;
 }
 
 // Getter & Setter
@@ -105,3 +108,8 @@ int UDPClient::GetFrameQuality()
 {
 	return _frameQuality;
 }
+
+bool UDPClient::GetServerRunning()
+{
+	return _running;
+};

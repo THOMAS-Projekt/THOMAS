@@ -39,6 +39,9 @@ namespace THOMAS {
 		// Serveradress-Struktur
 		struct sockaddr_in serverAddress;
 
+		// Status des UDP Servers
+		bool _running = false;
+
 	public:
 		// Konstruktor
 		UDPClient();
@@ -65,5 +68,8 @@ namespace THOMAS {
 
 		// Gibt die Frame Qualität zurücl
 		int GetFrameQuality();
+
+		// Gibt zurück, ob der Server bereits läuft
+		bool GetServerRunning();
 	};
 }

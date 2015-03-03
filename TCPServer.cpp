@@ -163,11 +163,15 @@ void TCPServer::ReceiveClient(int clientSocket, const char* ip)
 		// Daten empfangen, währenddessen blockieren
 		dataLength = recv(clientSocket, buffer, bufferLength, 0);
 
+		// FIXME: Evtl. THOMAS-Viewer fixen, sodass dieser Fehler nicht mehr auftritt
 		// Ist ein Fehler aufgetreten?
 		if(dataLength == -1)
 		{
 			// Nicht gut
-			throw THOMASException("Fehler beim Empfangen von Client-Daten!");
+			std::cout << "\033[33m" << "[WARNING]" << " Fehler beim Empfangen von Client Daten! IP: " << ip << "\033[0m" << std::endl;
+
+			// Empfangsfunktion abbrechen
+			break;
 		}
 
 		// Ist die Verbindung abgebrochen?
