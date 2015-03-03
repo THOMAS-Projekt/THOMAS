@@ -31,8 +31,8 @@ using namespace THOMAS;
 int main(int argc, char **argv)
 {
 	// Motorsteuerung starten
-	MotorControl *motorControl = new MotorControl();
-	motorControl->Run();
+	//MotorControl *motorControl = new MotorControl();
+	//motorControl->Run();
 
 	// TelemetryReceiver starten
 	TelemetryReceiver *teleRecv = new TelemetryReceiver();
