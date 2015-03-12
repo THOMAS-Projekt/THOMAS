@@ -52,8 +52,9 @@ void TelemetryReceiver::Run(int videoDeviceID)
 		throw THOMASException("Das Videodevice konnte nicht geöffnet werden");
 
 	// Kamera Größenparameter setzten
-	_videoCapture.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
-	_videoCapture.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+	_videoCapture.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH);
+	_videoCapture.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT);
+	_videoCapture.set(CV_CAP_PROP_FPS, CAMERA_MAX_FPS);
 
 	// Komprimierungseinstellung setzten
 	param[0] = CV_IMWRITE_JPEG_QUALITY;

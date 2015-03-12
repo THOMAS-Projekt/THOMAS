@@ -26,11 +26,14 @@
 // Enhält das Map-Element
 #include <map>
 
+// BYTE Alias
 #define BYTE char
 
+// Status Codes
 #define STATUS_CONNECT 0
 #define STATUS_DISCONNECT 1
 
+// Informations-IDs
 #define FIELD_CPU 0
 #define FIELD_MEMORY 1
 #define FIELD_DISK 2
@@ -38,8 +41,10 @@
 #define FIELD_SIGNAL 4
 #define FIELD_BANDWIDTH 5
 
+// Kamera Einstellungen
 #define CAMERA_WIDTH 1280
 #define CAMERA_HEIGHT 720
+#define CAMERA_MAX_FPS 30
 
 namespace THOMAS {
 
