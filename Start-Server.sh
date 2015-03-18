@@ -15,6 +15,9 @@ do
 	# Fehler ausgeben
 	echo $output
 
-	# 10 Sekunden warten
-	sleep 10
+	# Beep ausgeben
+	beep -f 1400 -l 1500
+
+	# 5 Sekunden warten
+	sleep 5
 done
