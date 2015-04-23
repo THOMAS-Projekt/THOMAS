@@ -2,7 +2,6 @@
 -- TCP-SERVER-KLASSE :: IMPLEMENTIERUNG --
 */
 
-
 /* INCLUDES */
 
 // Klassenheader
@@ -31,7 +30,6 @@ using namespace THOMAS;
 
 // POSIX-Internet-Protokoll-Funktionen [Non-Standard]
 #include <netinet/in.h>
-
 
 // Arpa - Definiert Internet Operationen
 // In diesem header ist u.a. die inet_ntoa Funktion definiert

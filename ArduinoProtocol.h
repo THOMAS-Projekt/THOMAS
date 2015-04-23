@@ -94,6 +94,9 @@ namespace THOMAS
 		// Entfernung des Ultraschallsensors auslesen
 		int GetDistance(unsigned char sensorID);
 
+		// Echte Entfernung bestimmen
+		int GetRealDistance(unsigned char sensorID, int tolerance);
+
 		// Sensorstatus abrufen und evtl. vorher aktualisieren
 		int GetStatus(unsigned char sensorID, bool newRequest);
 
@@ -114,6 +117,9 @@ namespace THOMAS
 
 		// Die Signalstärke des verbundenen Netzwerkes an den Arduino senden
 		void SetSignalStrength();
+
+		// Führt einen Konsolen Befehl aus:
+		void RunConsoleCommand(std::string command);
 
 		// Startet einen neuen Thread
 		void Run();

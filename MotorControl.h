@@ -18,6 +18,9 @@ Verzögerte Beschleunigungen werden eingesetzt, um abrupte Geschwindigkeitsände
 // ArduinoProtocol-Klasse
 #include "ArduinoProtocol.h"
 
+// CollisionDetection-Klasse
+#include "CollisionDetection.h"
+
 // C++-mutex-Klasse
 #include <mutex>
 
@@ -80,6 +83,9 @@ namespace THOMAS
 
 		// Der TCP-Server.
 		TCPServer *_server;
+
+		// Kollision-Detection Klasse
+		CollisionDetection *_collisionDetection;
 
 		// Der Motorgeschwindigkeits-Anpassungs-Thread.
 		std::thread *_controlMotorSpeedThread;

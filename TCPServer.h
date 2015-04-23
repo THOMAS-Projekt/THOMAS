@@ -11,7 +11,6 @@ Diese Klasse stellt einen TCP-Server an einem angegebenen Port dar, der Daten vo
 // Thread-Klasse
 #include <thread>
 
-
 /* KONSTANTEN */
 
 // BYTE-Typ.
@@ -19,7 +18,6 @@ Diese Klasse stellt einen TCP-Server an einem angegebenen Port dar, der Daten vo
 
 #define STATUS_CONNECT 0
 #define STATUS_DISCONNECT 1
-
 
 /* KLASSE */
 namespace THOMAS

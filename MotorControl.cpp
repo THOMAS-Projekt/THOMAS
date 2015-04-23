@@ -2,7 +2,6 @@
 -- MOTOR-CONTROL-KLASSE :: IMPLEMENTIERUNG --
 */
 
-
 /* INCLUDES */
 
 // Klassenheader
@@ -11,6 +10,8 @@ using namespace THOMAS;
 
 // THOMASException-Klasse
 #include "THOMASException.h"
+
+#include "CollisionDetection.h"
 
 // C++-Stringstream-Klasse
 // Diese Klasse erlaubt die Verkettung von Zeichenfolgen, sie wird hier für die Erzeugung von aussagekräftigen Exeptions benötigt.
@@ -28,12 +29,11 @@ using namespace THOMAS;
 // Hier wird die usleep()-Funktion benötigt.
 #include <unistd.h>
 
-
 /* FUNKTIONEN */
 
 MotorControl::MotorControl()
 {
-	
+
 }
 
 MotorControl::~MotorControl()
@@ -70,8 +70,10 @@ void MotorControl::Run()
 	// Kommunikation starten
 	_arduino->Run();
 
-	// RS232-Verbindung herstellen
+	//RS232-Verbindung herstellen
 	_rs232 = new RS232();
+
+	_collisionDetection = new CollisionDetection(_arduino);
 
 	// Motorgeschwindigkeitsanpassung starten
 	_controlMotorSpeedThread = new std::thread(&MotorControl::ControlMotorSpeedWrapper, this);
@@ -82,6 +84,8 @@ void MotorControl::Run()
 	// Server starten
 	_server = new TCPServer(4242, ComputeClientCommandWrapper, OnClientStatusChangeWrapper, static_cast<void *>(this));
 	_server->BeginListen();
+
+
 }
 
 void MotorControl::Stop()
@@ -119,6 +123,8 @@ void MotorControl::ControlMotorSpeed()
 	// Motorgeschwindigkeit kontinuierlich regeln, bis die Motorsteuerung beendet wird
 	float corrSum; // Joystick-Korrektursumme
 	short wantedSpeed[2] = {0, 0}; // Die angestrebte Geschwindigkeit {links, rechts}
+	std::vector<short> speedVector; // Vector mit der Geschwindigkeit
+
 	while(_running)
 	{
 		// Joystick-Daten sperren
@@ -153,6 +159,10 @@ void MotorControl::ControlMotorSpeed()
 			}
 		}
 		_joystickMutex->unlock();
+
+		// Auf Hindernisse prüfen und ggf. Werte ändern
+		speedVector = _collisionDetection->CorrectWantedSpeed(wantedSpeed);
+		std::copy(speedVector.begin(), speedVector.end(), wantedSpeed);
 
 		// Geschwindigkeitswerte angleichen: Links
 		{
@@ -286,6 +296,7 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength, int clientID
 
 				// Buttonwerte kopieren
 				memcpy(_joystickButtons, &data[1 + sizeof(short) * _joystickAxisCount], sizeof(BYTE) * _joystickButtonCount);
+
 			}
 			_joystickMutex->unlock();
 
@@ -323,6 +334,7 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 			params[1] = BACKWARDS;
 			_rs232->Send(5, params, 2);
 		}
+
 		if(_lastSpeed[MRIGHT_ARR] != speed)
 		{
 			// Geschwindigkeit senden (ohne Vorzeichen)
@@ -349,6 +361,7 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 			params[1] = BACKWARDS;
 			_rs232->Send(5, params, 2);
 		}
+
 		if(_lastSpeed[MLEFT_ARR] != speed)
 		{
 			// Geschwindigkeit senden (ohne Vorzeichen)
