@@ -70,7 +70,7 @@ void MotorControl::Run()
 	// Kommunikation starten
 	_arduino->Run();
 
-	//RS232-Verbindung herstellen
+	// RS232-Verbindung herstellen
 	_rs232 = new RS232();
 
 	_collisionDetection = new CollisionDetection(_arduino);
@@ -84,8 +84,6 @@ void MotorControl::Run()
 	// Server starten
 	_server = new TCPServer(4242, ComputeClientCommandWrapper, OnClientStatusChangeWrapper, static_cast<void *>(this));
 	_server->BeginListen();
-
-
 }
 
 void MotorControl::Stop()
