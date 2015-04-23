@@ -5,9 +5,13 @@
 
 /* INCLUDES */
 
+using namespace THOMAS;
+
 // MotorControl-Klasse
 #include "MotorControl.h"
-using namespace THOMAS;
+
+// TelemetryReceiver-Klasse
+#include "TelemetryReceiver.h"
 
 // THOMASException-Klasse
 #include "THOMASException.h"
@@ -29,6 +33,10 @@ int main(int argc, char **argv)
 	// Motorsteuerung starten
 	MotorControl *motorControl = new MotorControl();
 	motorControl->Run();
+
+	// TelemetryReceiver starten
+	TelemetryReceiver *teleRecv = new TelemetryReceiver();
+	teleRecv->Run();
 
 	// Programm laufen lassen, Prozessor nicht unnötig belasten (alles läuft in separaten Threads)
 	// TODO: Programm-Befehle per Tastatur etc.

@@ -33,12 +33,19 @@ using namespace THOMAS;
 #include <netinet/in.h>
 
 
+// Arpa - Definiert Internet Operationen
+// In diesem header ist u.a. die inet_ntoa Funktion definiert
+#include <arpa/inet.h>
+
 /* FUNKTIONEN */
 
-TCPServer::TCPServer(unsigned short port, ComputeReceivedDataFunction computeReceivedDataFunction, void *cRDFParams)
+TCPServer::TCPServer(unsigned short port, ComputeReceivedDataFunction computeReceivedDataFunction, OnClientStatusChangeFunction onClientStatusChangeFunction, void *cRDFParams)
 {
 	// Datenverarbeitungsfunktion merken
 	_computeReceivedDataFunction = computeReceivedDataFunction;
+
+	// Clientconnectfunktion merken
+	_onClientStatusChangeFunction = onClientStatusChangeFunction;
 	_cRDFParams = cRDFParams;
 
 	// Socket erstellen
@@ -81,7 +88,7 @@ void TCPServer::BeginListen()
 
 	// Listen-Thread erstellen
 	_listening = true;
-	_listenThread = new std::thread(&TCPServer::ListenWrapper, this);
+	_listenThread = new std::thread(&TCPServer::Listen, this);
 }
 
 void TCPServer::EndListen()
@@ -127,7 +134,7 @@ void TCPServer::Listen()
 		}
 
 		// Daten in separatem Thread empfangen
-		clientReceiveThreads.push_front(new std::thread(&TCPServer::ReceiveClientWrapper, this, clientSocket));
+		clientReceiveThreads.push_front(new std::thread(&TCPServer::ReceiveClientWrapper, this, clientSocket, inet_ntoa(clientAddress.sin_addr)));
 	}
 
 	// Abwarten, bis alle Client-Receive-Threads beendet sind
@@ -144,8 +151,11 @@ void TCPServer::Listen()
 	close(_socket);
 }
 
-void TCPServer::ReceiveClient(int clientSocket)
+void TCPServer::ReceiveClient(int clientSocket, const char* ip)
 {
+	//Client-Connect "Event"
+	_onClientStatusChangeFunction(clientSocket, 0, _cRDFParams, ip);
+
 	// Solange kein Abbruchbefehl kommt, Daten empfangen
 	int dataLength;
 	const int bufferLength = 256;
@@ -155,14 +165,15 @@ void TCPServer::ReceiveClient(int clientSocket)
 		// Daten empfangen, währenddessen blockieren
 		dataLength = recv(clientSocket, buffer, bufferLength, 0);
 
+		// FIXME: Evtl. THOMAS-Viewer fixen, sodass dieser Fehler nicht mehr auftritt
 		// Ist ein Fehler aufgetreten?
 		if(dataLength == -1)
 		{
-			// Fehlermeldung ausgeben
-			perror ("Fehler");
-
 			// Nicht gut
-			throw THOMASException("Fehler beim Empfangen von Client-Daten!");
+			std::cout << "\033[33m" << "[WARNING]" << " Fehler beim Empfangen von Client Daten! IP: " << ip << "\033[0m" << std::endl;
+
+			// Empfangsfunktion abbrechen
+			break;
 		}
 
 		// Ist die Verbindung abgebrochen?
@@ -173,9 +184,18 @@ void TCPServer::ReceiveClient(int clientSocket)
 		}
 
 		// Daten verarbeiten
-		_computeReceivedDataFunction(buffer, dataLength, _cRDFParams);
+		_computeReceivedDataFunction(buffer, dataLength, _cRDFParams, clientSocket);
 	}
 
 	// Client-Socket schließen
 	close(clientSocket);
+
+	// Client-Disconnect "Event"
+	_onClientStatusChangeFunction(clientSocket, STATUS_DISCONNECT, _cRDFParams, ip);
+}
+
+void TCPServer::Send(int clientSocket, BYTE *data, int dataLength)
+{
+	// Daten senden
+	send(clientSocket, data, dataLength, 0);
 }

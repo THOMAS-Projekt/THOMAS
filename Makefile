@@ -1,17 +1,19 @@
 CPPARGS= -std=c++11 -pthread
-LINKERARGS= -pthread
 
-all: main.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o THOMASException.o
-	g++ THOMASException.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o main.o -o thomas $(LINKERARGS)
+OPENCVARGS= `pkg-config --cflags opencv`
+LINKERARGS= -pthread -g -O0 -v -da -Q `pkg-config --libs opencv`
+
+all: main.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o THOMASException.o TelemetryReceiver.o UDPClient.o StatusInformation.o
+	g++ $(OPENCVARGS) THOMASException.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o TelemetryReceiver.o UDPClient.o StatusInformation.o main.o -o thomas $(LINKERARGS)
+
+main.o: main.cpp
+	g++ -c main.cpp $(CPPARGS)
 
 test: test.o TCPServer.o
 	g++ TCPServer.o test.o -o test $(LINKERARGS)
 
 test.o: test.cpp
 	g++ -c test.cpp $(CPPARGS)
-
-main.o: main.cpp
-	g++ -c main.cpp $(CPPARGS)
 
 RS232.o: RS232.cpp RS232.h
 	g++ -c RS232.cpp $(CPPARGS)
@@ -30,6 +32,15 @@ MotorControl.o: MotorControl.cpp MotorControl.h
 
 THOMASException.o: THOMASException.cpp THOMASException.h
 	g++ -c THOMASException.cpp $(CPPARGS)
+
+TelemetryReceiver.o: TelemetryReceiver.cpp TelemetryReceiver.h
+	g++ -c TelemetryReceiver.cpp $(CPPARGS)
+
+UDPClient.o: UDPClient.cpp UDPClient.h
+	g++ -c UDPClient.cpp $(CPPARGS)
+
+StatusInformation.o: StatusInformation.cpp StatusInformation.h
+	g++ -c StatusInformation.cpp $(CPPARGS)
 
 clean:
 	rm -rf ./*.o thomas test

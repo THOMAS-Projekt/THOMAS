@@ -17,6 +17,9 @@ Diese Klasse stellt einen TCP-Server an einem angegebenen Port dar, der Daten vo
 // BYTE-Typ.
 #define BYTE char
 
+#define STATUS_CONNECT 0
+#define STATUS_DISCONNECT 1
+
 
 /* KLASSE */
 namespace THOMAS
@@ -28,7 +31,9 @@ namespace THOMAS
 		// -> [1]: Ein Puffer-Array mit den empfangenen Daten.
 		// -> [2]: Die Länge der empfangenen Daten im Puffer-Array beginnend bei Index 0. Der evtl. übrige Teil des Puffer-Arrays muss unter Umständen verworfen werden.
 		// -> [3]: Weitere benutzerdefinierte Parameter, die an die Funktion übergeben werden sollen.
-		typedef void (*ComputeReceivedDataFunction)(BYTE *, int, void *);
+		typedef void (*ComputeReceivedDataFunction)(BYTE *, int, void *, int);
+
+		typedef void (*OnClientStatusChangeFunction)(int, int, void*, const char*);
 
 	private:
 		// Das Socket-Handle.
@@ -42,6 +47,9 @@ namespace THOMAS
 
 		// Die Funktion, die die empfangenen Client-Daten verarbeitet.
 		ComputeReceivedDataFunction _computeReceivedDataFunction;
+
+		// Die Funktion, die die empfangenen Clients speichert.
+		OnClientStatusChangeFunction _onClientStatusChangeFunction;
 
 		// Die an die Verarbeitungsfunktion zu übergebenden benutzerdefinierten Parameter.
 		void *_cRDFParams;
@@ -61,15 +69,15 @@ namespace THOMAS
 		// Parameter:
 		// -> obj: Das zur ReceiveClient-Funktion gehörende TCPServer-Objekt.
 		// -> clientSocket: Das Socket-Handle des verbundenen Client.
-		static void ReceiveClientWrapper(TCPServer *obj, int clientSocket)
+		static void ReceiveClientWrapper(TCPServer *obj, int clientSocket, const char* ip)
 		{
-			obj->ReceiveClient(clientSocket);
+			obj->ReceiveClient(clientSocket, ip);
 		}
 
 		// Stellt den Daten-Empfangsthread eines spezifischen Client dar. Wird nur von Listen() benutzt.
 		// Parameter:
 		// -> clientSocket: Das Socket-Handle des verbundenen Client.
-		void ReceiveClient(int clientSocket);
+		void ReceiveClient(int clientSocket, const char* ip);
 
 	public:
 		// Konstruktor.
@@ -78,7 +86,7 @@ namespace THOMAS
 		// -> port: Der Port, an dem auf Clienten gewartet werden soll.
 		// -> computeReceivedDataFunction: Die Funktion, die die empfangenen Client-Daten verarbeitet.
 		// -> cRDFParams: Die Parameter, die zusätzlich an computeReceivedDataFunction übergeben werden sollen.
-		TCPServer(unsigned short port, ComputeReceivedDataFunction computeReceivedDataFunction, void *cRDFParams);
+		TCPServer(unsigned short port, ComputeReceivedDataFunction computeReceivedDataFunction, OnClientStatusChangeFunction OnClientStatusChangeFunction, void *cRDFParams);
 
 		// Destruktor.
 		// Trennt alle noch bestehenden Verbindungen und beendet den Server.
@@ -89,5 +97,8 @@ namespace THOMAS
 
 		// Beendet das asynchrone Warten auf Clienten.
 		void EndListen();
+
+		// Sendet Bytes an den entsprechenden Client
+		void Send(int clientSocket, BYTE *data, int dataLength);
 	};
 }

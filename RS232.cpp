@@ -82,7 +82,7 @@ void RS232::Send(BYTE com, BYTE *params, int paramCount)
 {
 	// Befehlsarray erstellen (3 Sonderbytes + Kommandobyte + Parameter)
 	BYTE *data = new BYTE[4 + paramCount];
-	
+
 	// Die beiden Steuerbytes setzen
 	data[0] = 35;
 	data[1] = 35;

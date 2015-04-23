@@ -52,7 +52,6 @@ MotorControl::~MotorControl()
 
 void MotorControl::Run()
 {
-
 	// Läuft die Steuerung schon?
 	if(_running)
 		throw THOMASException("Fehler: Die Motorsteuerung ist bereits aktiv!");
@@ -81,7 +80,7 @@ void MotorControl::Run()
 	_computeInputButtonsThread = new std::thread(&MotorControl::ComputeInputButtonsWrapper, this);
 
 	// Server starten
-	_server = new TCPServer(4242, ComputeClientCommandWrapper, static_cast<void *>(this));
+	_server = new TCPServer(4242, ComputeClientCommandWrapper, OnClientStatusChangeWrapper, static_cast<void *>(this));
 	_server->BeginListen();
 }
 
@@ -238,7 +237,7 @@ void MotorControl::ComputeInputButtons()
 	}
 }
 
-void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
+void MotorControl::ComputeClientCommand(BYTE *data, int dataLength, int clientID)
 {
 	// Kommandobyte prüfen
 	switch(data[0])
@@ -282,7 +281,7 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength)
 			// Joystick-Daten sperren
 			_joystickMutex->lock();
 			{
-				// Achswerte kopieren
+				// Achsendaten kopieren
 				memcpy(_joystickAxis, &data[1], sizeof(short) * _joystickAxisCount);
 
 				// Buttonwerte kopieren
@@ -324,8 +323,7 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 			params[1] = BACKWARDS;
 			_rs232->Send(5, params, 2);
 		}
-
-		if(_lastSpeed[MRIGHT_ARR] != speed) 
+		if(_lastSpeed[MRIGHT_ARR] != speed)
 		{
 			// Geschwindigkeit senden (ohne Vorzeichen)
 			params[0] = MRIGHT;
@@ -351,8 +349,7 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 			params[1] = BACKWARDS;
 			_rs232->Send(5, params, 2);
 		}
-
-		if(_lastSpeed[MLEFT_ARR] != speed) 
+		if(_lastSpeed[MLEFT_ARR] != speed)
 		{
 			// Geschwindigkeit senden (ohne Vorzeichen)
 			params[0] = MLEFT;
@@ -361,4 +358,9 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 		}
 		_lastSpeed[MLEFT_ARR] = speed;
 	}
+}
+
+void MotorControl::OnClientStatusChange(int clientID, int status, const char *ip)
+{
+	// TODO: Optionale implementierung => Wenn sich ein Client verbindet
 }

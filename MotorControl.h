@@ -139,20 +139,23 @@ namespace THOMAS
 		// -> speed: Die neue Motorgeschwindigkeit (-255 bis 255).
 		void SendMotorSpeed(int motor, short speed);
 
+		// Neuer Client verbunden
+		void OnClientStatusChange(int clientID, int status, const char* ip);
+
 		// Verarbeitet vom Server empfangene Steuerbefehle.
 		// Parameter:
 		// -> data: Die vom Server empfangenen Daten.
 		// -> dataLength: Die Länge der vom Server empfangenen Daten.
-		void ComputeClientCommand(BYTE *data, int dataLength);
+		void ComputeClientCommand(BYTE *data, int dataLength, int clientID);
 
 		// Wrapper, um die ComputeClientCommand-Memberfunktion sauber an den TCP-Server zu übergeben.
 		// Parameter:
 		// -> data: Die vom Server empfangenen Daten.
 		// -> dataLength: Die Länge der vom Server empfangenen Daten.
 		// -> obj: Das zur ComputeClientCommand-Funktion gehörende MotorControl-Objekt.
-		static void ComputeClientCommandWrapper(BYTE *data, int dataLength, void *obj)
+		static void ComputeClientCommandWrapper(BYTE *data, int dataLength, void *obj, int clientID)
 		{
-			(reinterpret_cast<MotorControl *>(obj))->ComputeClientCommand(data, dataLength);
+			(reinterpret_cast<MotorControl *>(obj))->ComputeClientCommand(data, dataLength, clientID);
 		}
 
 		// Passt kontinuierlich die Motorgeschwindigkeit an die aktuellen Joystick-Daten an.
@@ -175,6 +178,15 @@ namespace THOMAS
 		static void ComputeInputButtonsWrapper(MotorControl *obj)
 		{
 			obj->ComputeInputButtons();
+		}
+
+		// Wrapper, um die OnClientStatusChange-Memberfunktion sauber an den TCP Server zu übergeben
+		// Parameter:
+		// -> clientID: ID eines Client Threads zur Referenzierung
+		// -> Status: 0 = Connect, 1 = Disconnect
+		static void OnClientStatusChangeWrapper(int clientID, int status, void *obj, const char *ip)
+		{
+			(reinterpret_cast<MotorControl *>(obj))->OnClientStatusChange(clientID, status, ip);
 		}
 
 	public:
