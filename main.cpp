@@ -5,13 +5,13 @@
 
 /* INCLUDES */
 
-using namespace THOMAS;
-
 // MotorControl-Klasse
 #include "MotorControl.h"
 
 // TelemetryReceiver-Klasse
 #include "TelemetryReceiver.h"
+
+using namespace THOMAS;
 
 // THOMASException-Klasse
 #include "THOMASException.h"
