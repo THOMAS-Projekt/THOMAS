@@ -5,3 +5,6 @@
 *.o
 *.exe
 *.stackdump
+*~
+thomas
+test

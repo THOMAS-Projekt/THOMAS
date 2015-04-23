@@ -24,14 +24,14 @@ namespace THOMAS
 	private:
 		// Die Fehlermeldung.
 		std::string _message;
-		
+
 	public:
 		// Konstruktor.
 		// Erstellt eine neue THOMASException mit der angegebenen Fehlermeldung.
 		// Parameter:
 		// -> message: Die Fehlermeldung.
 		THOMASException(std::string message);
-		
+
 		// Gibt die Fehlernachricht zurück.
 		const char* what();
 	};

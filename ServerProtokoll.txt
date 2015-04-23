@@ -4,6 +4,9 @@ Dieses Datenübertragungsprotokoll definiert die Kommunikation zwischen Client-J
 
 ~ Kommunikation:
 
+=> [C] Heartbeat
+	=> 1. [BYTE]: = 0, Kommandobyte.
+
 => [C] Übermittlung der Joystick-Daten: JOYSTICK_HEADER
 	=> 1. [BYTE]: = 1, Kommandobyte.
 	=> 2. [BYTE]: Anzahl der Joystick-Achsen.

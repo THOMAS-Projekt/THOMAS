@@ -34,27 +34,27 @@ RS232::RS232()
 {
 	// Anschlusshandle erstellen, RS232-Anschluss (ttyS0) laden
 	_handle = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NDELAY);
-	
+
 	// Fehler abfangen
 	if(_handle == -1)
 	{
 		// Fehler
 		throw THOMASException("Fehler: Es konnte keine Verbindung zum RS232-Port hergestellt werden!");
 	}
-	
+
 	// Anschluss-Flags leeren
 	fcntl(_handle, F_SETFL, 0);
-	
+
 	// Anschluss-Optionen erstellen
 	termios fOpt;
-	
+
 	// Aktuelle Anschluss-Optionen abrufen
 	tcgetattr(_handle, &fOpt);
-	
+
 	// Baudrate setzen (9600); TODO: Zu Testzwecken auf 1200
 	cfsetispeed(&fOpt, B9600); // Input
 	cfsetospeed(&fOpt, B9600); // Output
-	
+
 	// TODO: Daten empfangen?
 	/*
 	// Flags setzen
@@ -67,7 +67,7 @@ RS232::RS232()
 	fOpt.c_cc[VTIME] = 0;
 	fOpt.c_cflag |= (CLOCAL | CREAD);
 	*/
-	
+
 	// Neue Port-Optionen einsetzen
 	tcsetattr(_handle, TCSANOW, &fOpt);
 }
@@ -109,7 +109,7 @@ void RS232::Send(BYTE com, BYTE *params, int paramCount)
 		// Mist
 		throw THOMASException("Fehler beim Senden eines Befehls!");
 	}
-	
+
 	// Speicher freigeben
 	delete[] data;
 }

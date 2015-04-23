@@ -23,16 +23,16 @@ namespace THOMAS
 	private:
 		// Das interne RS232-Handle.
 		int _handle;
-		
+
 	public:
 		// Konstruktor.
 		// Stellt die Verbindung mit der Motorsteuerung her.
 		RS232();
-		
+
 		// Destruktor.
 		// Trennt die Verbindung mit der Motorsteuerung.
 		~RS232();
-		
+
 		// Sendet die übergebenen Bytes an den RS232-Port und gibt bei Erfolg true zurück, bei Fehlern false.
 		// Parameter:
 		// -> com: Das zu übergebende Befehlsbyte.
