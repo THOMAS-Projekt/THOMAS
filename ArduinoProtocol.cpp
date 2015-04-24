@@ -89,6 +89,9 @@ void ArduinoProtocol::Stop()
 // Thread zum Aktualisieren der Signalstärke
 void ArduinoProtocol::UpdateSignalStrength()
 {
+	// Zähler
+	int i = 0;
+
 	while(true)
 	{
 		// Aktuallisiert die Wlan Signalstärke
@@ -96,6 +99,18 @@ void ArduinoProtocol::UpdateSignalStrength()
 
 		// In der Ruhe liegt die Kraft
 		sleep(5);
+
+		// Alle 30 Sekunden SSID updaten
+		if ( i % 6 == 0)
+		{
+			// Aktuelle SSID setzten
+			SetCurrentSSID();
+
+			// Zähler zurücksetzten
+			i = 0;
+		}
+
+		i++;
 	}
 }
 
