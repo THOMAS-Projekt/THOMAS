@@ -118,9 +118,6 @@ namespace THOMAS
 		// Die Signalstärke des verbundenen Netzwerkes an den Arduino senden
 		void SetSignalStrength();
 
-		// Führt einen Konsolen Befehl aus:
-		void RunConsoleCommand(std::string command);
-
 		// Startet einen neuen Thread
 		void Run();
 

@@ -190,6 +190,10 @@ int ArduinoProtocol::GetRealDistance(unsigned char sensorID, int tolerance)
 {
 	int distance[2];
 
+	// Maximale Messungen
+	int max = 10;
+
+	int i = 0;
 	do
 	{
 		// Erste Messung durchführen
@@ -200,10 +204,14 @@ int ArduinoProtocol::GetRealDistance(unsigned char sensorID, int tolerance)
 
 		// Zweite Messung durchführen
 		distance[1] = GetDistance(sensorID);
-	}
-	while(!(distance[0] - distance[1] <= tolerance && distance[0] - distance[1] >= (-1) * tolerance));
 
-	return (distance[0]+distance[1])/2;
+		// Zähler erhöhen
+		i++;
+	}
+	while(!(distance[0] - distance[1] <= tolerance && distance[0] - distance[1] >= (-1) * tolerance) && i != max);
+
+	// Messwerte zurückgeben
+	return (distance[0] + distance[1]) / 2;
 }
 
 // Ruft den Status des angegebenen Sensors ab, bzw. aktualisiert diesen vorher
@@ -443,8 +451,3 @@ void ArduinoProtocol::SetSignalStrength()
 	arduinoMutex->unlock();
 }
 
-// Consolen Kommando ausführen
-void ArduinoProtocol::RunConsoleCommand(std::string command)
-{
-	arduinoCom->Exec(command);
-}

@@ -11,6 +11,7 @@ using namespace THOMAS;
 // THOMASException-Klasse
 #include "THOMASException.h"
 
+// CollisionDetection-Klasse
 #include "CollisionDetection.h"
 
 // C++-Stringstream-Klasse
@@ -121,7 +122,7 @@ void MotorControl::ControlMotorSpeed()
 	// Motorgeschwindigkeit kontinuierlich regeln, bis die Motorsteuerung beendet wird
 	float corrSum; // Joystick-Korrektursumme
 	short wantedSpeed[2] = {0, 0}; // Die angestrebte Geschwindigkeit {links, rechts}
-	std::vector<short> speedVector; // Vector mit der Geschwindigkeit
+	std::vector<short> speedVector (2); // Vector mit der Geschwindigkeit
 
 	while(_running)
 	{
@@ -294,7 +295,6 @@ void MotorControl::ComputeClientCommand(BYTE *data, int dataLength, int clientID
 
 				// Buttonwerte kopieren
 				memcpy(_joystickButtons, &data[1 + sizeof(short) * _joystickAxisCount], sizeof(BYTE) * _joystickButtonCount);
-
 			}
 			_joystickMutex->unlock();
 

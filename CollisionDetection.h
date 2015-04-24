@@ -46,7 +46,7 @@ namespace THOMAS
 		// Konstruktor
 		CollisionDetection(ArduinoProtocol *arduinoProtocol);
 
-		// Prüft die Distanz und korrigiert die
+		// Prüft die Distanz und korrigiert die Motorgeschwindigkeit
 		std::vector<short> CorrectWantedSpeed(short wantedSpeed[]);
 	};
 }
