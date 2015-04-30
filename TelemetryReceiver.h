@@ -9,6 +9,9 @@
 // StatusInformation-Klasse
 #include "StatusInformation.h"
 
+// Enthält die Kommunikation für den Arduino
+#include "ArduinoProtocol.h"
+
 // OpenCV implementieren
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -63,6 +66,9 @@ namespace THOMAS {
 		// Aufnahme Thread
 		std::thread *_captureFrameThread;
 
+		// ArduinoProtocol Klasse
+		ArduinoProtocol *_arduino;
+
 		// VideoCapture Device
 		cv::VideoCapture _videoCapture;
 
@@ -106,7 +112,7 @@ namespace THOMAS {
 		TelemetryReceiver();
 
 		// Wird beim Start ausgeführt
-		void Run(int videoDeviceID = 0);
+		void Run(ArduinoProtocol *arduinoProtocol, int videoDeviceID = 0);
 
 	};
 }

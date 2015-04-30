@@ -331,7 +331,7 @@ int ArduinoProtocol::ChangeCamPosition(unsigned char camera, int degree)
 	return data;
 }
 
-// Arduino aningen
+// Arduino anpingen
 void ArduinoProtocol::Heartbeat()
 {
 	// Kommunikation sperren
@@ -379,6 +379,9 @@ void ArduinoProtocol::SetCurrentSSID()
 
 		// Das fehlerhafte Zeichen am Ende löschen
 		SSID = SSID.substr(0, SSID.length() - 1);
+
+		// SSID speichern
+		_SSID = SSID;
 
 		// Erstellt neuen Char mit der Länge des Strings
 		BYTE textData[SSID.length()];
@@ -447,6 +450,9 @@ void ArduinoProtocol::SetSignalStrength()
 			strg_value = strg_value < 0 ? 0 : strg_value;
 		}
 
+		// Signalstärke speichern
+		_signalStrength =  strg_value;
+
 		// Paket erstellen:
 		// 4 = Status ändern
 		// 1 = Signalstärke
@@ -466,3 +472,20 @@ void ArduinoProtocol::SetSignalStrength()
 	arduinoMutex->unlock();
 }
 
+// Die SSID zurückgeben
+std::string ArduinoProtocol::GetSSID()
+{
+	return _SSID;
+}
+
+// Die SSID zurückgeben
+int ArduinoProtocol::GetSignalStrength()
+{
+	return _signalStrength;
+}
+
+// Die Bandbreite zurüclgeben
+std::string ArduinoProtocol::GetBandwidth()
+{
+	return arduinoCom->Exec("iwconfig wlan0 | grep -i 'Bit Rate' | cut -d = -f 2 | rev | cut -c 17- | rev");;
+}

@@ -205,7 +205,7 @@ namespace THOMAS
 		~MotorControl();
 
 		// Startet die Motorsteuerung.
-		void Run();
+		void Run(ArduinoProtocol *arduinoProtocol);
 
 		// Beendet die Motorsteuerung.
 		void Stop();

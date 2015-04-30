@@ -51,7 +51,7 @@ MotorControl::~MotorControl()
 	delete _joystickMutex;
 }
 
-void MotorControl::Run()
+void MotorControl::Run(ArduinoProtocol *arduinoProtocol)
 {
 	// Läuft die Steuerung schon?
 	if(_running)
@@ -66,10 +66,7 @@ void MotorControl::Run()
 	_joystickMutex = new std::mutex();
 
 	// Arduino-Verbindung herstellen
-	_arduino = new ArduinoProtocol();
-
-	// Kommunikation starten
-	_arduino->Run();
+	_arduino = arduinoProtocol;
 
 	// RS232-Verbindung herstellen
 	_rs232 = new RS232();
