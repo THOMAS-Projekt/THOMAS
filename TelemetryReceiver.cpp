@@ -79,11 +79,11 @@ void TelemetryReceiver::Run(ArduinoProtocol *arduinoProtocol, int videoDeviceID)
 	std::thread CPUThread(&StatusInformation::CPUCaptureThreadWrapper, _statusInformation);
 
 	// Neuen Framesverarbeitungs-Thread erstellen
-	std::thread caputeFrameThread(&TelemetryReceiver::CaptureFrameThread, this);
+	std::thread captureFrameThread(&TelemetryReceiver::CaptureFrameThread, this);
 
 	// Threads syncronisieren
 	CPUThread.join();
-	caputeFrameThread.join();
+	captureFrameThread.join();
 }
 
 void TelemetryReceiver::CaptureFrameThread()
