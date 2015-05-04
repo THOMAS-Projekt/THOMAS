@@ -33,7 +33,7 @@ void StatusInformation::CPUCaptureThread()
 {
 	while(true)
 	{
-	// Wenn kein Client connectet ist, CPU nicht unnötig belasten
+		// Wenn kein Client connectet ist, CPU nicht unnötig belasten
 		while(!_status)
 			usleep(50000);
 
@@ -126,12 +126,12 @@ int StatusInformation::CalculateSum(std::vector<int> data, int start, int end)
 // Gibt die gespeicherte CPU Auslastung zurück.
 float StatusInformation::GetCPUUsageSaved()
 {
+	// CPU Last zurück geben
 	return _CPUUsage;
 }
 
 float StatusInformation::GetCPUUsage()
 {
-
 	// Array mit Berechneten Werten
 	std::vector<int> calculationData(4);
 

@@ -81,6 +81,7 @@ void TelemetryReceiver::Run(ArduinoProtocol *arduinoProtocol, int videoDeviceID)
 	// Neuen Framesverarbeitungs-Thread erstellen
 	std::thread caputeFrameThread(&TelemetryReceiver::CaptureFrameThread, this);
 
+	// Threads syncronisieren
 	CPUThread.join();
 	caputeFrameThread.join();
 }
@@ -220,7 +221,6 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 		// Statusfeld => Kommandobyte, ID des Feldes
 		case 2:
 		{
-
 			switch(data[1])
 			{
 				// Anforderung der CPU-Last
@@ -244,7 +244,6 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 					_server->Send(clientID, buff, vecData.size());
 
 					break;
-
 				}
 
 				// Anforderung des Rams

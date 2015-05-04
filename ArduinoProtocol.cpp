@@ -496,5 +496,6 @@ std::string ArduinoProtocol::GetBandwidth()
 	// Zeilenumbrüche ersetzten
 	std::replace(bandwidth.begin(),bandwidth.end(), '\n',' ');
 
+	// Bandbreite zurückgeben
 	return bandwidth;
 }

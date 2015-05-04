@@ -165,6 +165,7 @@ void TCPServer::ReceiveClient(int clientSocket, const char* ip)
 		// Packtlänge lesen
 		dataLength = recv(clientSocket, buffer, 1, 0);
 
+		// Ist ein Fehler aufgetreten?
 		if(dataLength == -1)
 		{
 			// Nicht gut

@@ -27,6 +27,7 @@ namespace THOMAS
 		// Ist Client verbunden?
 		bool _status = false;
 
+		// CPU Last
 		float _CPUUsage = 0;
 
 	public:
@@ -54,7 +55,7 @@ namespace THOMAS
 		// Gibt die gespeicherte CPU Auslastung zurück
 		float GetCPUUsageSaved();
 
-		// Wraper, um die OnClientStatusChange Funktion sauber an den TCP-Server zu übergeben
+		// Wraper, um die CPUCaptureThreadWrapper Funktion sauber zu übergeben
 		static void CPUCaptureThreadWrapper(void *obj)
 		{
 			(reinterpret_cast<StatusInformation *>(obj))->CPUCaptureThread();
