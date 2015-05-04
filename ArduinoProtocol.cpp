@@ -24,6 +24,9 @@ using namespace THOMAS;
 // Die sleep()-Funktion wird benötigt.
 #include <unistd.h>
 
+// Enthält die replace Funktion
+#include <algorithm>
+
 /* FUNKTIONEN */
 
 // Konstruktor
@@ -484,8 +487,14 @@ int ArduinoProtocol::GetSignalStrength()
 	return _signalStrength;
 }
 
-// Die Bandbreite zurüclgeben
+// Die Bandbreite zurückgeben
 std::string ArduinoProtocol::GetBandwidth()
 {
-	return arduinoCom->Exec("iwconfig wlan0 | grep -i 'Bit Rate' | cut -d = -f 2 | rev | cut -c 17- | rev");;
+	// Bandbreite abrufen
+	std::string bandwidth = arduinoCom->Exec("iwconfig wlan0 | grep -i 'Bit Rate' | cut -d = -f 2 | rev | cut -c 17- | rev");
+
+	// Zeilenumbrüche ersetzten
+	std::replace(bandwidth.begin(),bandwidth.end(), '\n',' ');
+
+	return bandwidth;
 }

@@ -21,6 +21,14 @@ namespace THOMAS
 		// CPU Daten abrufen
 		std::vector<int> GetCPUData();
 
+		// Ruft die CPU Last im seperaten Thread auf.
+		void CPUCaptureThread();
+
+		// Ist Client verbunden?
+		bool _status = false;
+
+		float _CPUUsage = 0;
+
 	public:
 		// Konstruktor
 		StatusInformation();
@@ -39,5 +47,17 @@ namespace THOMAS
 		// 1 = Verfügbar
 		// 2 = Benutzt
 		std::vector<int> GetMemoryInfo();
+
+		// Status, ob Client verbunden ist
+		void SetClientConnectStatus(bool status);
+
+		// Gibt die gespeicherte CPU Auslastung zurück
+		float GetCPUUsageSaved();
+
+		// Wraper, um die OnClientStatusChange Funktion sauber an den TCP-Server zu übergeben
+		static void CPUCaptureThreadWrapper(void *obj)
+		{
+			(reinterpret_cast<StatusInformation *>(obj))->CPUCaptureThread();
+		}
 	};
 }

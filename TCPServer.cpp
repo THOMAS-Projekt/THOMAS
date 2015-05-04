@@ -156,12 +156,29 @@ void TCPServer::ReceiveClient(int clientSocket, const char* ip)
 
 	// Solange kein Abbruchbefehl kommt, Daten empfangen
 	int dataLength;
+	int packetLength;
 	const int bufferLength = 256;
 	BYTE *buffer = new BYTE[bufferLength];
+
 	while(_listening)
 	{
+		// Packtlänge lesen
+		dataLength = recv(clientSocket, buffer, 1, 0);
+
+		if(dataLength == -1)
+		{
+			// Nicht gut
+			std::cout << "\033[33m" << "[WARNING]" << " Fehler beim Empfangen von Client Daten! IP: " << ip << "\033[0m" << std::endl;
+
+			// Empfangsfunktion abbrechen
+			break;
+		}
+
+		// Packet Länge speichern
+		packetLength = buffer[0];
+
 		// Daten empfangen, währenddessen blockieren
-		dataLength = recv(clientSocket, buffer, bufferLength, 0);
+		dataLength = recv(clientSocket, buffer, packetLength , 0);
 
 		// FIXME: Evtl. THOMAS-Viewer fixen, sodass dieser Fehler nicht mehr auftritt
 		// Ist ein Fehler aufgetreten?
@@ -180,7 +197,6 @@ void TCPServer::ReceiveClient(int clientSocket, const char* ip)
 			// Empfangsfunktion abbrechen
 			break;
 		}
-
 		// Daten verarbeiten
 		_computeReceivedDataFunction(buffer, dataLength, _cRDFParams, clientSocket);
 	}

@@ -75,8 +75,13 @@ void TelemetryReceiver::Run(ArduinoProtocol *arduinoProtocol, int videoDeviceID)
 	// Status Informations Klasse initialisieren
 	_statusInformation = new StatusInformation();
 
+	// Neuen Thread erstellen
+	std::thread CPUThread(&StatusInformation::CPUCaptureThreadWrapper, _statusInformation);
+
 	// Neuen Framesverarbeitungs-Thread erstellen
 	std::thread caputeFrameThread(&TelemetryReceiver::CaptureFrameThread, this);
+
+	CPUThread.join();
 	caputeFrameThread.join();
 }
 
@@ -170,6 +175,10 @@ void TelemetryReceiver::OnClientStatusChange(int clientID, int status, const cha
 			// IP setzten
 			UDPClientList[clientID].SetIP(ip);
 
+
+			// CPU-Last Thread aktivieren
+			_statusInformation->SetClientConnectStatus(true);
+
 			break;
 		}
 
@@ -178,6 +187,9 @@ void TelemetryReceiver::OnClientStatusChange(int clientID, int status, const cha
 		{
 			// UDPClient löschen und aus Liste entfernen
 			UDPClientList.erase(clientID);
+
+			// CPU-Last Thread stoppen
+			_statusInformation->SetClientConnectStatus(false);
 
 			break;
 		}
@@ -208,13 +220,15 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 		// Statusfeld => Kommandobyte, ID des Feldes
 		case 2:
 		{
+
 			switch(data[1])
 			{
 				// Anforderung der CPU-Last
 				case FIELD_CPU:
 				{
+
 					// CPU-Last Sring erstellen
-					std::string CPULoad = std::to_string(static_cast<int>(_statusInformation->GetCPUUsage()));
+					std::string CPULoad = std::to_string(static_cast<int>(_statusInformation->GetCPUUsageSaved()));
 					CPULoad += "%\n";
 
 					// Informationen in Vector Laden
@@ -230,6 +244,7 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 					_server->Send(clientID, buff, vecData.size());
 
 					break;
+
 				}
 
 				// Anforderung des Rams
@@ -322,7 +337,7 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 				case FIELD_BANDWIDTH:
 				{
 					// Bandbreiten String erstellen
-					std::string bandwidth = _arduino->GetBandwidth() + "MBit/s\n";
+					std::string bandwidth = _arduino->GetBandwidth() + "MBit/s \n";
 
 					// Informationen in Vector Laden
 					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_BANDWIDTH, bandwidth));
