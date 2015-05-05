@@ -2,6 +2,12 @@
 Dieses Datenübertragungsprotokoll definiert die Kommunikation zwischen Client-Joystick [C] und dem Server [S].
 
 
+~ Paketübertragung:
+
+=> 1. [BYTE]: Paketlänge (max. 255)
+=> 2. [BYTE[Paketlänge]]: Paket
+
+
 ~ Kommunikation:
 
 => [C] Heartbeat
