@@ -43,7 +43,7 @@ std::vector<short> CollisionDetection::CorrectWantedSpeed(short wantedSpeed[])
 	{
 		// Nach links fahren
 		newWantedSpeed.at(0) = 0;
-		newWantedSpeed.at(1) = 32767;
+		newWantedSpeed.at(1) = 255;
 
 		return newWantedSpeed;
 	}
@@ -52,7 +52,7 @@ std::vector<short> CollisionDetection::CorrectWantedSpeed(short wantedSpeed[])
 	if(_arduinoProtocol->GetRealDistance(US_FRONT_RIGHT, _tolerance) > _warnDistanceRL)
 	{
 		// Nach rechts fahren
-		newWantedSpeed.at(0) = 32767;
+		newWantedSpeed.at(0) = 255;
 		newWantedSpeed.at(1) = 0;
 
 		return newWantedSpeed;
