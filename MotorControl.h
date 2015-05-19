@@ -93,6 +93,9 @@ namespace THOMAS
 		// Der Tastenverarbeitungs-Thread.
 		std::thread *_computeInputButtonsThread;
 
+		// Thread, der die USensor Daten aktuallisiert
+		std::thread *_updateUSensorData;
+
 		// Speichert die jeweils letzten gesendeten Motorgeschwindigkeiten.
 		// Hiermit werden die benötigten Drehrichtungswechsel-Befehle der Motoren realisiert.
 		// Inhalt:

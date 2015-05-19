@@ -8,6 +8,9 @@ Kann Serverdaten, wie CPU-Last etc. abfragen und zurück geben
 // Enhält das Vector-Element
 #include <vector>
 
+// Mutex-Klasse
+#include <mutex>
+
 /* Klasse */
 namespace THOMAS
 {
@@ -29,6 +32,9 @@ namespace THOMAS
 
 		// CPU Last
 		float _CPUUsage = 0;
+
+		// Mutex
+		std::mutex mutex;
 
 	public:
 		// Konstruktor

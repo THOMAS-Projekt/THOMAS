@@ -23,13 +23,37 @@ CollisionDetection::CollisionDetection(ArduinoProtocol *arduinoProtocol)
 	_arduinoProtocol = arduinoProtocol;
 }
 
+
+void CollisionDetection::UpdateUSensorData()
+{
+	// Wiederhole immer
+	while(true)
+	{
+		// Durch die Sensoren iterieren
+		for(int sensorID = 0; sensorID < SENSOR_COUNT; sensorID++)
+		{
+			// Messwert abrufen und speichern
+			int readDistance = _arduinoProtocol->GetRealDistance(sensorID, _tolerance);
+
+			// Zugriff von anderen Threads sperren
+			mutex.lock();
+
+			// Aktuellen Messwert in das Array an entsprechende Stelle kopieren
+			USensorMessurements.at(sensorID) = readDistance;
+
+			// Zugriff von anderen Threads erlauben
+			mutex.unlock();
+		}
+	}
+}
+
 std::vector<short> CollisionDetection::CorrectWantedSpeed(short wantedSpeed[])
 {
 	// Neuen Vector mit dem Speed erstellen
 	std::vector<short> newWantedSpeed (2);
 
 	// Ist vorne frei?
-	if(_arduinoProtocol->GetRealDistance(US_FRONT_MIDDLE, _tolerance) > _warnDistance)
+	if(USensorMessurements.at(US_FRONT_MIDDLE) > _warnDistance)
 	{
 		// Geradeaus weiter fahren
 		newWantedSpeed.at(0) = wantedSpeed[0];
@@ -39,20 +63,20 @@ std::vector<short> CollisionDetection::CorrectWantedSpeed(short wantedSpeed[])
 	}
 
 	// Ist Links frei
-	if(_arduinoProtocol->GetRealDistance(US_FRONT_LEFT, _tolerance) > _warnDistanceRL)
+	if(USensorMessurements.at(US_FRONT_LEFT) > _warnDistanceRL)
 	{
 		// Nach links fahren
 		newWantedSpeed.at(0) = 0;
-		newWantedSpeed.at(1) = 255;
+		newWantedSpeed.at(1) = 32767;
 
 		return newWantedSpeed;
 	}
 
 	// Ist Rechts frei
-	if(_arduinoProtocol->GetRealDistance(US_FRONT_RIGHT, _tolerance) > _warnDistanceRL)
+	if(USensorMessurements.at(US_FRONT_RIGHT) > _warnDistanceRL)
 	{
 		// Nach rechts fahren
-		newWantedSpeed.at(0) = 255;
+		newWantedSpeed.at(0) = 32767;
 		newWantedSpeed.at(1) = 0;
 
 		return newWantedSpeed;

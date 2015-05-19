@@ -79,6 +79,9 @@ void MotorControl::Run(ArduinoProtocol *arduinoProtocol)
 	// Tastendruckverarbeitung starten
 	_computeInputButtonsThread = new std::thread(&MotorControl::ComputeInputButtonsWrapper, this);
 
+	// UpdateUsensorDataThread starten
+	_updateUSensorData = new std::thread(&CollisionDetection::UpdateUSensorDataWrapper, _collisionDetection);
+
 	// Server starten
 	_server = new TCPServer(4242, ComputeClientCommandWrapper, OnClientStatusChangeWrapper, static_cast<void *>(this));
 	_server->BeginListen();
