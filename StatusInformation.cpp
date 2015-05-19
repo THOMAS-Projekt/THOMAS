@@ -38,13 +38,13 @@ void StatusInformation::CPUCaptureThread()
 			usleep(50000);
 
 		// Zugriff von anderen Threads sperren
-		mutex.lock();
+		CPUMutex.lock();
 
 		// Prozessorauslastung abfragen und speichern
 		_CPUUsage = GetCPUUsage();
 
 		// Zugriff von anderen Threads erlauben
-		mutex.unlock();
+		CPUMutex.unlock();
 
 		// 200ms warten
 		usleep(50000);

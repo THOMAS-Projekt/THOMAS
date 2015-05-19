@@ -55,7 +55,7 @@ namespace THOMAS
 		std::vector<int> USensorMessurements = std::vector<int>(SENSOR_COUNT);
 
 		// Mutex
-		std::mutex mutex;
+		std::mutex USensorMutex;
 
 	public:
 		// Konstruktor

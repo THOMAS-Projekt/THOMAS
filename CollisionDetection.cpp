@@ -23,7 +23,6 @@ CollisionDetection::CollisionDetection(ArduinoProtocol *arduinoProtocol)
 	_arduinoProtocol = arduinoProtocol;
 }
 
-
 void CollisionDetection::UpdateUSensorData()
 {
 	// Wiederhole immer
@@ -36,13 +35,13 @@ void CollisionDetection::UpdateUSensorData()
 			int readDistance = _arduinoProtocol->GetRealDistance(sensorID, _tolerance);
 
 			// Zugriff von anderen Threads sperren
-			mutex.lock();
+			USensorMutex.lock();
 
 			// Aktuellen Messwert in das Array an entsprechende Stelle kopieren
 			USensorMessurements.at(sensorID) = readDistance;
 
 			// Zugriff von anderen Threads erlauben
-			mutex.unlock();
+			USensorMutex.unlock();
 		}
 	}
 }

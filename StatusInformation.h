@@ -34,7 +34,7 @@ namespace THOMAS
 		float _CPUUsage = 0;
 
 		// Mutex
-		std::mutex mutex;
+		std::mutex CPUMutex;
 
 	public:
 		// Konstruktor
