@@ -51,4 +51,4 @@ MotorControlTest.o: MotorControlTest.cpp
 	g++ -c MotorControlTest.cpp $(CPPARGS)
 
 clean:
-	rm -rf ./*.o thomas test
+	rm -rf ./*.o thomas mct test

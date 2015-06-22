@@ -27,7 +27,6 @@ int main(int argc, const char* argv[])
 	// Alle Parameter angegeben?
 	if(argc < 2)
 	{
-
 		// Fehlermeldung ausgeben
 		std::cout << "Fehlende Parameter: <Zeitintervall zwischen Änderung>" << std::endl;
 
