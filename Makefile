@@ -11,6 +11,9 @@ main.o: main.cpp
 test: test.o TCPServer.o
 	g++ TCPServer.o test.o -o test $(LINKERARGS)
 
+mct: MotorControlTest.o RS232.o THOMASException.o
+	g++ MotorControlTest.o RS232.o THOMASException.o -o mct $(LINKERARGS)
+
 test.o: test.cpp
 	g++ -c test.cpp $(CPPARGS)
 
@@ -43,6 +46,9 @@ StatusInformation.o: StatusInformation.cpp StatusInformation.h
 
 CollisionDetection.o: CollisionDetection.cpp CollisionDetection.h
 	g++ -c CollisionDetection.cpp $(CPPARGS)
+
+MotorControlTest.o: MotorControlTest.cpp
+	g++ -c MotorControlTest.cpp $(CPPARGS)
 
 clean:
 	rm -rf ./*.o thomas test
