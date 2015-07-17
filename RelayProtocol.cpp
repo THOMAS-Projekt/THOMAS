@@ -48,6 +48,7 @@ RelayProtocol::RelayProtocol()
 	cfsetispeed(&options, B19200); // Input
 	cfsetospeed(&options, B19200); // Output
 
+	// Schnittstellen-Flags setzen
 	options.c_cflag &= ~PARENB; // kein Partybit
 	options.c_cflag &= ~CSTOPB; // 1 Stopbit
 	options.c_cflag &= ~CSIZE; // 8 Datenbits
@@ -62,6 +63,7 @@ RelayProtocol::RelayProtocol()
 	// Einstellungen flushen
 	tcflush(_handle,TCIOFLUSH);
 
+	// Attribute setzen
 	tcsetattr(_handle, TCSAFLUSH, &options);
 
 	fcntl(_handle, F_SETFL, FNDELAY);
@@ -86,7 +88,7 @@ void RelayProtocol::SendCommand(UBYTE command, UBYTE address, UBYTE data)
 	buff[2] = data;
 
 	// Prüfsumme erstellen
-	buff[3] = buff[0]^buff[1]^buff[2];
+	buff[3] = buff[0] ^ buff[1] ^ buff[2];
 
 	// 50ms warten
 	usleep(50000);
@@ -105,16 +107,17 @@ bool RelayProtocol::ReceiveStatus()
 	read(_handle, buff, 4);
 
 	// Prüfsumme berechnen
-	int pruefsumme = buff[0]^buff[1]^buff[2];
+	int pruefsumme = buff[0] ^ buff[1] ^ buff[2];
 
 	// Stimmen die Prüfsummen überein?
 	if(pruefsumme != buff[3])
 		return false;
 
+	// Erfolg zurückgeben
 	return true;
 }
 
-void RelayProtocol::SetRelay(int port, int status)
+void RelayProtocol::SetRelay(int port, bool status)
 {
 	// Port Value
 	UBYTE val = -1;
@@ -123,7 +126,7 @@ void RelayProtocol::SetRelay(int port, int status)
 	switch (status)
 	{
 		// Relay ausschalten
-		case OFF:
+		case false:
 		{
 			// Port in Binary umwandeln
 			val = ~(1 << (port - 1));
@@ -132,7 +135,7 @@ void RelayProtocol::SetRelay(int port, int status)
 		}
 
 		// Relay anschalten
-		case ON:
+		case true:
 		{
 			// Port in Binary umwandeln
 			val = 1 << (port - 1);
@@ -148,7 +151,7 @@ void RelayProtocol::SetRelay(int port, int status)
 	ReceiveStatus();
 }
 
-void RelayProtocol::SetAll(int status)
+void RelayProtocol::SetAll(bool status)
 {
 	// Port Value
 	UBYTE val = -1;
@@ -157,7 +160,7 @@ void RelayProtocol::SetAll(int status)
 	switch (status)
 	{
 		// Relay ausschalten
-		case OFF:
+		case false:
 		{
 			// Port in Binary umwandeln
 			val = 0;
@@ -166,7 +169,7 @@ void RelayProtocol::SetAll(int status)
 		}
 
 		// Relay anschalten
-		case ON:
+		case true:
 		{
 			// Port in Binary umwandeln
 			val = 255;

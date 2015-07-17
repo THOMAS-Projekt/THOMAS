@@ -15,9 +15,6 @@ Diese Klasse übernimmt die direkte Steuerung des Relays
 #define BYTE char
 #define UBYTE unsigned char
 
-#define OFF 0
-#define ON 1
-
 /* KLASSE */
 namespace THOMAS
 {
@@ -28,8 +25,10 @@ namespace THOMAS
 		// USB-Handle
 		int _handle;
 
+		// Sendet die Bytes an das Relay
 		void SendCommand(UBYTE command, UBYTE address, UBYTE data);
 
+		// Relay Status
 		bool ReceiveStatus();
 
 	public:
@@ -38,9 +37,9 @@ namespace THOMAS
 		RelayProtocol();
 
 		// Setzt den Status eines Ports
-		void SetRelay(int port, int status);
+		void SetRelay(int port, bool status);
 
 		// Setzt alle Ports auf den jeweiligen Status
-		void SetAll(int status);
+		void SetAll(bool status);
 	};
 }
