@@ -28,21 +28,17 @@ void CollisionDetection::UpdateUSensorData()
 	// Wiederhole immer
 	while(true)
 	{
-		// Durch die Sensoren iterieren
-		for(int sensorID = 0; sensorID < SENSOR_COUNT; sensorID++)
-		{
-			// Messwert abrufen und speichern
-			int readDistance = _arduinoProtocol->GetRealDistance(sensorID, _tolerance);
+		// Messwerte abrufen und speichern
+		std::vector<int> distance = _arduinoProtocol->GetDistance();
 
-			// Zugriff von anderen Threads sperren
-			USensorMutex.lock();
+		// Zugriff von anderen Threads sperren
+		USensorMutex.lock();
 
-			// Aktuellen Messwert in das Array an entsprechende Stelle kopieren
-			USensorMessurements.at(sensorID) = readDistance;
+		// Aktuelle Messwerte in das Array kopieren
+		USensorMessurements = distance;
 
-			// Zugriff von anderen Threads erlauben
-			USensorMutex.unlock();
-		}
+		// Zugriff von anderen Threads erlauben
+		USensorMutex.unlock();
 	}
 }
 

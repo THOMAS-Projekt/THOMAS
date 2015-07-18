@@ -20,6 +20,9 @@ using namespace THOMAS;
 // CString - Enthält underanderem die strcpy Funktion
 #include <cstring>
 
+// Vector-Klasse
+#include <vector>
+
 // UNIX-Standard-Funktionen [Non-Standard]
 // Die sleep()-Funktion wird benötigt.
 #include <unistd.h>
@@ -175,11 +178,11 @@ void ArduinoProtocol::WriteMessage(std::string text, unsigned char priority)
 	arduinoMutex->unlock();
 }
 
-// Gibt den Messwert des angegebenen Ultraschallsensors in cm zurück
-int ArduinoProtocol::GetDistance(unsigned char sensorID)
+// Gibt den Messwert aller Ultraschallsensoren in cm zurück
+std::vector<int> ArduinoProtocol::GetDistance()
 {
 	// Speicher für die Daten
-	int data;
+	std::vector<int> data(5);
 
 	// Kommunikation sperren
 	arduinoMutex->lock();
@@ -187,75 +190,22 @@ int ArduinoProtocol::GetDistance(unsigned char sensorID)
 		// Paket erstellen:
 		// 2 = Sensoren ansprechen
 		// 0 = Ultraschallsensoren
-		// x = SensorID
-		// 2 = Messwet abrufen
-		UBYTE package[4] = {2, 0, sensorID, 2};
+		// 0 = Messwete abrufen
+		UBYTE package[3] = {2, 0, 0};
 
 		// Sende das Paket an den Arduino
-		arduinoCom->Send(package, 4);
+		arduinoCom->Send(package, 3);
 
-		// Gelesenen Wert in cm umrechnen und zurückgeben FIXME: Den Wert stattdessen als genaueren Integer übertragen.
-		data = (int) arduinoCom->Receive()[0] * 2;
-	}
-	arduinoMutex->unlock();
+		// Werte in Array konvertieren
+		unsigned char buff[5] = {};
+		memcpy(buff, arduinoCom->Receive(), 5);
 
-	// Daten zurückgeben
-	return data;
-}
-
-// Gibt den Messwert zurück. Dabei werden Fehlmessungen ausgeschlossen
-int ArduinoProtocol::GetRealDistance(unsigned char sensorID, int tolerance)
-{
-	int distance[2];
-
-	// Maximale Messungen
-	int max = 10;
-
-	int i = 0;
-	do
-	{
-		// Erste Messung durchführen
-		distance[0] = GetDistance(sensorID);
-
-		// TODO: Evtl. anpassen
-		usleep(10000);
-
-		// Zweite Messung durchführen
-		distance[1] = GetDistance(sensorID);
-
-		// Zähler erhöhen
-		i++;
-	}
-	while(!(distance[0] - distance[1] <= tolerance && distance[0] - distance[1] >= (-1) * tolerance) && i != max);
-
-	// Messwerte zurückgeben
-	return (distance[0] + distance[1]) / 2;
-}
-
-// Ruft den Status des angegebenen Sensors ab, bzw. aktualisiert diesen vorher
-int ArduinoProtocol::GetStatus(unsigned char sensorID, bool newRequest)
-{
-	// Speicher für die Daten
-	int data;
-
-	// Kommunikation sperren
-	arduinoMutex->lock();
-	{
-		// Wähle zwischen aktuallisieren und abrufen
-		UBYTE requestType = newRequest ? 0 : 1;
-
-		// Paket erstellen:
-		// 2 = Sensoren ansprechen
-		// 0 = Ultraschallsensoren
-		// x = SensorID
-		// 1/2 Status aktuallisieren/abrufen
-		UBYTE package[4] = {2, 0, sensorID, requestType};
-
-		// Sende das Paket an den Arduino
-		arduinoCom->Send(package, 4);
-
-		// Auf eine Antwort warten und den Status zurückgeben
-		data = (int) arduinoCom->Receive()[0];
+		// Messwerte durchlaufen
+		for(int i = 0; i < 5; i++)
+		{
+			// Messwert in cm umrechnen und zum Vector hinzufügen
+			data.at(i) = (int) buff[i] * 2;
+		}
 	}
 	arduinoMutex->unlock();
 
