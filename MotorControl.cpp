@@ -228,6 +228,9 @@ void MotorControl::ComputeInputButtons()
 	// Tastendrücke bis zum Beenden der Motorsteuerung verarbeiten
 	bool kill_server = false; // Beenden-Anfrage
 	bool horn = false; // Hupe
+	bool radio = false; // Radio
+	bool radioButtonPressed = false; // Radio-Knopf gedrückt
+	bool radioIsPlaying = false; // Radio aktiv?
 
 	int cam_servo_direction = 0; // Richtung in den der Servo gedreht werden soll
 	while(_running)
@@ -242,6 +245,9 @@ void MotorControl::ComputeInputButtons()
 
 				// Feuerknopf abfragen
 				horn = (_joystickButtons[0] == 1);
+
+				// Radio Button
+				radio = (_joystickButtons[5] == 1);
 
 				// Servosteuerung nach Wert des kleinen Steuerknüppels
 				cam_servo_direction = _joystickAxis[4] < 0 ? -1 : _joystickAxis[4] > 0 ? 1 : 0;
@@ -268,6 +274,28 @@ void MotorControl::ComputeInputButtons()
 			// Status merken
 			_hornActive = horn;
 		}
+
+		// Wurde der Button losgelassen?
+		if (radioButtonPressed && !radio)
+		{
+			// Spielt das Radio ab?
+			if (radioIsPlaying)
+			{
+				// Radio beenden
+				system("./radio stop");
+			}
+			else
+			{
+				// Radio starten
+				system("./radio start");
+			}
+
+			// Radiozustand merken
+			radioIsPlaying = !radioIsPlaying;
+		}
+
+		// Tastenzustand merken
+		radioButtonPressed = radio;
 
 		// Kamera-Servo drehen?
 		if(cam_servo_direction != 0)
