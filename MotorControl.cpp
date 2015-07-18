@@ -14,6 +14,9 @@ using namespace THOMAS;
 // CollisionDetection-Klasse
 #include "CollisionDetection.h"
 
+// RelayProtocol-Klasse
+#include "RelayProtocol.h"
+
 // C++-Stringstream-Klasse
 // Diese Klasse erlaubt die Verkettung von Zeichenfolgen, sie wird hier für die Erzeugung von aussagekräftigen Exeptions benötigt.
 #include <sstream>
@@ -71,7 +74,11 @@ void MotorControl::Run(ArduinoProtocol *arduinoProtocol)
 	// RS232-Verbindung herstellen
 	_rs232 = new RS232();
 
+	// CollisionDetection initialisieren
 	_collisionDetection = new CollisionDetection(_arduino);
+
+	// Relay-Steuerung initialisieren
+	_relayProtocol = new RelayProtocol();
 
 	// Motorgeschwindigkeitsanpassung starten
 	_controlMotorSpeedThread = new std::thread(&MotorControl::ControlMotorSpeedWrapper, this);
@@ -210,6 +217,8 @@ void MotorControl::ComputeInputButtons()
 
 	// Tastendrücke bis zum Beenden der Motorsteuerung verarbeiten
 	bool kill_server = false; // Beenden-Anfrage
+	bool horn = false; // Hupe
+
 	int cam_servo_direction = 0; // Richtung in den der Servo gedreht werden soll
 	while(_running)
 	{
@@ -220,6 +229,9 @@ void MotorControl::ComputeInputButtons()
 			{
 				// Not-Aus-Schalter abfragen
 				kill_server = (_joystickButtons[6] == 1);
+
+				// Feuerknopf abfragen
+				horn = (_joystickButtons[0] == 1);
 
 				// Servosteuerung nach Wert des kleinen Steuerknüppels
 				cam_servo_direction = _joystickAxis[4] < 0 ? -1 : _joystickAxis[4] > 0 ? 1 : 0;
@@ -235,6 +247,16 @@ void MotorControl::ComputeInputButtons()
 
 			// Fehler werfen und somit das Programm beenden
 			throw THOMASException("Info: Der Server wurde durch einen der Clienten beendet.");
+		}
+
+		// Wurde der Status verändert?
+		if(horn != _hornActive)
+		{
+			// Relay schalten
+			_relayProtocol->SetRelay(1, horn);
+
+			// Status merken
+			_hornActive = horn;
 		}
 
 		// Kamera-Servo drehen?

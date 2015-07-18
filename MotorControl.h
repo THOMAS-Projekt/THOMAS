@@ -21,6 +21,9 @@ Verzögerte Beschleunigungen werden eingesetzt, um abrupte Geschwindigkeitsände
 // CollisionDetection-Klasse
 #include "CollisionDetection.h"
 
+// RelayProtocol-Klasse
+#include "RelayProtocol.h"
+
 // C++-mutex-Klasse
 #include <mutex>
 
@@ -75,6 +78,9 @@ namespace THOMAS
 		// Gibt an, ob die Steuerung aktiv ist.
 		bool _running = false;
 
+		// Hupt das Horn?
+		bool _hornActive = false;
+
 		// Arduino-Kommunikation
 		ArduinoProtocol *_arduino;
 
@@ -86,6 +92,9 @@ namespace THOMAS
 
 		// Kollision-Detection Klasse
 		CollisionDetection *_collisionDetection;
+
+		// RelayProtocl Klasse
+		RelayProtocol *_relayProtocol;
 
 		// Der Motorgeschwindigkeits-Anpassungs-Thread.
 		std::thread *_controlMotorSpeedThread;
