@@ -36,7 +36,7 @@ RelayProtocol::RelayProtocol()
 	struct termios options;
 
 	// Anschlusshandle erstellen
-	_handle = open("/dev/ttyUSB1", O_RDWR | O_NOCTTY | O_NDELAY);
+	_handle = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
 
 	// Anschluss-Flags leeren
 	fcntl(_handle, F_SETFL, 0);
@@ -122,6 +122,9 @@ void RelayProtocol::SetRelay(int port, bool status)
 	// Port Value
 	UBYTE val = -1;
 
+	// Enhält die Relay Daten
+	UBYTE rval;
+
 	// Status prüfen
 	switch (status)
 	{
@@ -130,6 +133,9 @@ void RelayProtocol::SetRelay(int port, bool status)
 		{
 			// Port in Binary umwandeln
 			val = ~(1 << (port - 1));
+
+			// Bitweises UND
+			rval = rval & val;
 
 			break;
 		}
@@ -140,12 +146,15 @@ void RelayProtocol::SetRelay(int port, bool status)
 			// Port in Binary umwandeln
 			val = 1 << (port - 1);
 
+			// Bitweises ODER
+			rval = rval | val;
+
 			break;
 		}
 	}
 
 	// Status senden
-	SendCommand(3, 1, val);
+	SendCommand(3, 1, rval);
 
 	// Read-Buffer leeren
 	ReceiveStatus();
