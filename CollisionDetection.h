@@ -40,10 +40,10 @@ namespace THOMAS
 		ArduinoProtocol *_arduinoProtocol;
 
 		// Ab wann soll die Hindernisserkennung eingreifen (in cm)
-		int _warnDistance = 50;
+		int _warnDistance = 30;
 
 		// Ab wann soll die Hindernisserkennung eingreifen - Rechte und Linke Sensoren (in cm)
-		int _warnDistanceRL = 100;
+		int _warnDistanceRL = 40;
 
 		// Die Tolleranz der Messungen
 		int _tolerance = 10;

@@ -61,8 +61,8 @@ std::vector<short> CollisionDetection::CorrectWantedSpeed(short wantedSpeed[])
 	if(USensorMessurements.at(US_FRONT_LEFT) > _warnDistanceRL || USensorMessurements.at(US_FRONT_LEFT) == 0)
 	{
 		// Nach links fahren
-		newWantedSpeed.at(0) = 0;
-		newWantedSpeed.at(1) = 32767;
+		newWantedSpeed.at(0) = -100;
+		newWantedSpeed.at(1) = 100;
 
 		return newWantedSpeed;
 	}
@@ -71,8 +71,8 @@ std::vector<short> CollisionDetection::CorrectWantedSpeed(short wantedSpeed[])
 	if(USensorMessurements.at(US_FRONT_RIGHT) > _warnDistanceRL || USensorMessurements.at(US_FRONT_RIGHT) == 0)
 	{
 		// Nach rechts fahren
-		newWantedSpeed.at(0) = 32767;
-		newWantedSpeed.at(1) = 0;
+		newWantedSpeed.at(0) = 100;
+		newWantedSpeed.at(1) = -100;
 
 		return newWantedSpeed;
 
