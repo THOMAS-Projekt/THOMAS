@@ -129,6 +129,9 @@ void MotorControl::ControlMotorSpeed()
 	// Motorgeschwindigkeit kontinuierlich regeln, bis die Motorsteuerung beendet wird
 	float corrSum; // Joystick-Korrektursumme
 	short wantedSpeed[2] = {0, 0}; // Die angestrebte Geschwindigkeit {links, rechts}
+	short newWantedSpeed[2] = {0,0}; // Anhand der Sensordaten korrigierte Geschwindigkeit
+	bool overwriteSpeed = false; // Gibt an ob die Beschleuningung umgangen werden soll
+
 	std::vector<short> speedVector (2); // Vector mit der Geschwindigkeit
 
 	while(_running)
@@ -168,12 +171,19 @@ void MotorControl::ControlMotorSpeed()
 
 		// Auf Hindernisse prüfen und ggf. Werte ändern
 		speedVector = _collisionDetection->CorrectWantedSpeed(wantedSpeed);
-		std::copy(speedVector.begin(), speedVector.end(), wantedSpeed);
+		std::copy(speedVector.begin(), speedVector.end(), newWantedSpeed);
+
+		// Prüfen ob die Beschleunigung umgangen werden soll
+		overwriteSpeed = !(wantedSpeed[0] == newWantedSpeed[0] && wantedSpeed[1] == newWantedSpeed[1]);
+
+		// Korrigierte Geschwindigkeit übernehmen
+		wantedSpeed[0] = newWantedSpeed[0];
+		wantedSpeed[1] = newWantedSpeed[1];
 
 		// Geschwindigkeitswerte angleichen: Links
 		{
 			// Würde die direkte Annahme der Wunschgeschwindigkeit in diesem Takt die Maximalbeschleunigung überschreiten?
-			if(abs(wantedSpeed[MLEFT_ARR] - _lastSpeed[MLEFT_ARR]) > _speedMaxAcc)
+			if(!overwriteSpeed && abs(wantedSpeed[MLEFT_ARR] - _lastSpeed[MLEFT_ARR]) > _speedMaxAcc)
 			{
 				// Motor angemessen beschleunigen, auch wenn Wunschgeschwindigkeit nicht erreicht wird
 				// Der ternäre Operator ist hier die schönste und kürzeste Variante; er passt nur je nach Vorzeichen der Geschwindigkeitsdifferenz das Vorzeichen der Beschleunigung an.
@@ -189,7 +199,7 @@ void MotorControl::ControlMotorSpeed()
 		// Geschwindigkeitswerte angleichen: Rechts
 		{
 			// Überschreitung der Maximalbeschleunigung?
-			if(abs(wantedSpeed[MRIGHT_ARR] - _lastSpeed[MRIGHT_ARR]) > _speedMaxAcc)
+			if(!overwriteSpeed && abs(wantedSpeed[MRIGHT_ARR] - _lastSpeed[MRIGHT_ARR]) > _speedMaxAcc)
 			{
 				// Motor angemessen beschleunigen
 				SendMotorSpeed(MRIGHT, _lastSpeed[MRIGHT_ARR] + (wantedSpeed[MRIGHT_ARR] > _lastSpeed[MRIGHT_ARR] ? _speedMaxAcc : -_speedMaxAcc));
