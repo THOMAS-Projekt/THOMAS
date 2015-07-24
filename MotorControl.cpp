@@ -14,6 +14,9 @@ using namespace THOMAS;
 // CollisionDetection-Klasse
 #include "CollisionDetection.h"
 
+// RelayProtocol-Klasse
+#include "RelayProtocol.h"
+
 // C++-Stringstream-Klasse
 // Diese Klasse erlaubt die Verkettung von Zeichenfolgen, sie wird hier für die Erzeugung von aussagekräftigen Exeptions benötigt.
 #include <sstream>
@@ -71,7 +74,11 @@ void MotorControl::Run(ArduinoProtocol *arduinoProtocol)
 	// RS232-Verbindung herstellen
 	_rs232 = new RS232();
 
+	// CollisionDetection initialisieren
 	_collisionDetection = new CollisionDetection(_arduino);
+
+	// Relay-Steuerung initialisieren
+	_relayProtocol = new RelayProtocol();
 
 	// Motorgeschwindigkeitsanpassung starten
 	_controlMotorSpeedThread = new std::thread(&MotorControl::ControlMotorSpeedWrapper, this);
@@ -122,6 +129,9 @@ void MotorControl::ControlMotorSpeed()
 	// Motorgeschwindigkeit kontinuierlich regeln, bis die Motorsteuerung beendet wird
 	float corrSum; // Joystick-Korrektursumme
 	short wantedSpeed[2] = {0, 0}; // Die angestrebte Geschwindigkeit {links, rechts}
+	short newWantedSpeed[2] = {0,0}; // Anhand der Sensordaten korrigierte Geschwindigkeit
+	bool overwriteSpeed = false; // Gibt an ob die Beschleuningung umgangen werden soll
+
 	std::vector<short> speedVector (2); // Vector mit der Geschwindigkeit
 
 	while(_running)
@@ -161,12 +171,19 @@ void MotorControl::ControlMotorSpeed()
 
 		// Auf Hindernisse prüfen und ggf. Werte ändern
 		speedVector = _collisionDetection->CorrectWantedSpeed(wantedSpeed);
-		std::copy(speedVector.begin(), speedVector.end(), wantedSpeed);
+		std::copy(speedVector.begin(), speedVector.end(), newWantedSpeed);
+
+		// Prüfen ob die Beschleunigung umgangen werden soll
+		overwriteSpeed = !(wantedSpeed[0] == newWantedSpeed[0] && wantedSpeed[1] == newWantedSpeed[1]);
+
+		// Korrigierte Geschwindigkeit übernehmen
+		wantedSpeed[0] = newWantedSpeed[0];
+		wantedSpeed[1] = newWantedSpeed[1];
 
 		// Geschwindigkeitswerte angleichen: Links
 		{
 			// Würde die direkte Annahme der Wunschgeschwindigkeit in diesem Takt die Maximalbeschleunigung überschreiten?
-			if(abs(wantedSpeed[MLEFT_ARR] - _lastSpeed[MLEFT_ARR]) > _speedMaxAcc)
+			if(!overwriteSpeed && abs(wantedSpeed[MLEFT_ARR] - _lastSpeed[MLEFT_ARR]) > _speedMaxAcc)
 			{
 				// Motor angemessen beschleunigen, auch wenn Wunschgeschwindigkeit nicht erreicht wird
 				// Der ternäre Operator ist hier die schönste und kürzeste Variante; er passt nur je nach Vorzeichen der Geschwindigkeitsdifferenz das Vorzeichen der Beschleunigung an.
@@ -182,7 +199,7 @@ void MotorControl::ControlMotorSpeed()
 		// Geschwindigkeitswerte angleichen: Rechts
 		{
 			// Überschreitung der Maximalbeschleunigung?
-			if(abs(wantedSpeed[MRIGHT_ARR] - _lastSpeed[MRIGHT_ARR]) > _speedMaxAcc)
+			if(!overwriteSpeed && abs(wantedSpeed[MRIGHT_ARR] - _lastSpeed[MRIGHT_ARR]) > _speedMaxAcc)
 			{
 				// Motor angemessen beschleunigen
 				SendMotorSpeed(MRIGHT, _lastSpeed[MRIGHT_ARR] + (wantedSpeed[MRIGHT_ARR] > _lastSpeed[MRIGHT_ARR] ? _speedMaxAcc : -_speedMaxAcc));
@@ -210,6 +227,11 @@ void MotorControl::ComputeInputButtons()
 
 	// Tastendrücke bis zum Beenden der Motorsteuerung verarbeiten
 	bool kill_server = false; // Beenden-Anfrage
+	bool horn = false; // Hupe
+	bool radio = false; // Radio
+	bool radioButtonPressed = false; // Radio-Knopf gedrückt
+	bool radioIsPlaying = false; // Radio aktiv?
+
 	int cam_servo_direction = 0; // Richtung in den der Servo gedreht werden soll
 	while(_running)
 	{
@@ -220,6 +242,12 @@ void MotorControl::ComputeInputButtons()
 			{
 				// Not-Aus-Schalter abfragen
 				kill_server = (_joystickButtons[6] == 1);
+
+				// Feuerknopf abfragen
+				horn = (_joystickButtons[0] == 1);
+
+				// Radio Button
+				radio = (_joystickButtons[5] == 1);
 
 				// Servosteuerung nach Wert des kleinen Steuerknüppels
 				cam_servo_direction = _joystickAxis[4] < 0 ? -1 : _joystickAxis[4] > 0 ? 1 : 0;
@@ -236,6 +264,38 @@ void MotorControl::ComputeInputButtons()
 			// Fehler werfen und somit das Programm beenden
 			throw THOMASException("Info: Der Server wurde durch einen der Clienten beendet.");
 		}
+
+		// Wurde der Status verändert?
+		if(horn != _hornActive)
+		{
+			// Relay schalten
+			_relayProtocol->SetRelay(1, horn);
+
+			// Status merken
+			_hornActive = horn;
+		}
+
+		// Wurde der Button losgelassen?
+		if (radioButtonPressed && !radio)
+		{
+			// Spielt das Radio ab?
+			if (radioIsPlaying)
+			{
+				// Radio beenden
+				system("./radio stop");
+			}
+			else
+			{
+				// Radio starten
+				system("./radio start");
+			}
+
+			// Radiozustand merken
+			radioIsPlaying = !radioIsPlaying;
+		}
+
+		// Tastenzustand merken
+		radioButtonPressed = radio;
 
 		// Kamera-Servo drehen?
 		if(cam_servo_direction != 0)

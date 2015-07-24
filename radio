@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ "$1" == "start" ]; then
+	screen -d -m -S radio mplayer http://mp3ad.energybremen.c.nmdn.net/energybremen_mobile/livestream.mp3
+fi
+
+if [ "$1" == "stop" ]; then
+        screen -X -S radio quit
+fi

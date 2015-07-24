@@ -20,6 +20,9 @@ Diese Klasse enthält das Protokoll zur Kommunikation mit dem Arduino
 // C++-mutex-Klasse
 #include <mutex>
 
+// Vector Klasse
+#include <vector>
+
 /* KONSTANTEN */
 
 // BYTE-Typ.
@@ -96,14 +99,8 @@ namespace THOMAS
 		// Setze Text auf LCD
 		void WriteMessage(std::string text, unsigned char priority);
 
-		// Entfernung des Ultraschallsensors auslesen
-		int GetDistance(unsigned char sensorID);
-
-		// Echte Entfernung bestimmen
-		int GetRealDistance(unsigned char sensorID, int tolerance);
-
-		// Sensorstatus abrufen und evtl. vorher aktualisieren
-		int GetStatus(unsigned char sensorID, bool newRequest);
+		// Messwerte der Ultraschallsensoren abrufen
+		std::vector<int> GetDistance();
 
 		// Position der Kamera setzen
 		int SetCamPosition(unsigned char camera, unsigned char degree);
