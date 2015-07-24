@@ -2,7 +2,6 @@
 -- MOTOR-CONTROL-KLASSE :: IMPLEMENTIERUNG --
 */
 
-
 /* INCLUDES */
 
 // Klassenheader
@@ -11,6 +10,9 @@ using namespace THOMAS;
 
 // THOMASException-Klasse
 #include "THOMASException.h"
+
+// CollisionDetection-Klasse
+#include "CollisionDetection.h"
 
 // C++-Stringstream-Klasse
 // Diese Klasse erlaubt die Verkettung von Zeichenfolgen, sie wird hier für die Erzeugung von aussagekräftigen Exeptions benötigt.
@@ -28,12 +30,11 @@ using namespace THOMAS;
 // Hier wird die usleep()-Funktion benötigt.
 #include <unistd.h>
 
-
 /* FUNKTIONEN */
 
 MotorControl::MotorControl()
 {
-	
+
 }
 
 MotorControl::~MotorControl()
@@ -50,7 +51,7 @@ MotorControl::~MotorControl()
 	delete _joystickMutex;
 }
 
-void MotorControl::Run()
+void MotorControl::Run(ArduinoProtocol *arduinoProtocol)
 {
 	// Läuft die Steuerung schon?
 	if(_running)
@@ -65,19 +66,21 @@ void MotorControl::Run()
 	_joystickMutex = new std::mutex();
 
 	// Arduino-Verbindung herstellen
-	_arduino = new ArduinoProtocol();
-
-	// Kommunikation starten
-	_arduino->Run();
+	_arduino = arduinoProtocol;
 
 	// RS232-Verbindung herstellen
 	_rs232 = new RS232();
+
+	_collisionDetection = new CollisionDetection(_arduino);
 
 	// Motorgeschwindigkeitsanpassung starten
 	_controlMotorSpeedThread = new std::thread(&MotorControl::ControlMotorSpeedWrapper, this);
 
 	// Tastendruckverarbeitung starten
 	_computeInputButtonsThread = new std::thread(&MotorControl::ComputeInputButtonsWrapper, this);
+
+	// UpdateUsensorDataThread starten
+	_updateUSensorData = new std::thread(&CollisionDetection::UpdateUSensorDataWrapper, _collisionDetection);
 
 	// Server starten
 	_server = new TCPServer(4242, ComputeClientCommandWrapper, OnClientStatusChangeWrapper, static_cast<void *>(this));
@@ -119,6 +122,8 @@ void MotorControl::ControlMotorSpeed()
 	// Motorgeschwindigkeit kontinuierlich regeln, bis die Motorsteuerung beendet wird
 	float corrSum; // Joystick-Korrektursumme
 	short wantedSpeed[2] = {0, 0}; // Die angestrebte Geschwindigkeit {links, rechts}
+	std::vector<short> speedVector (2); // Vector mit der Geschwindigkeit
+
 	while(_running)
 	{
 		// Joystick-Daten sperren
@@ -153,6 +158,10 @@ void MotorControl::ControlMotorSpeed()
 			}
 		}
 		_joystickMutex->unlock();
+
+		// Auf Hindernisse prüfen und ggf. Werte ändern
+		speedVector = _collisionDetection->CorrectWantedSpeed(wantedSpeed);
+		std::copy(speedVector.begin(), speedVector.end(), wantedSpeed);
 
 		// Geschwindigkeitswerte angleichen: Links
 		{
@@ -323,6 +332,7 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 			params[1] = BACKWARDS;
 			_rs232->Send(5, params, 2);
 		}
+
 		if(_lastSpeed[MRIGHT_ARR] != speed)
 		{
 			// Geschwindigkeit senden (ohne Vorzeichen)
@@ -349,6 +359,7 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 			params[1] = BACKWARDS;
 			_rs232->Send(5, params, 2);
 		}
+
 		if(_lastSpeed[MLEFT_ARR] != speed)
 		{
 			// Geschwindigkeit senden (ohne Vorzeichen)

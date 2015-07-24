@@ -24,6 +24,9 @@ using namespace THOMAS;
 // Die sleep()-Funktion wird benötigt.
 #include <unistd.h>
 
+// Enthält die replace Funktion
+#include <algorithm>
+
 /* FUNKTIONEN */
 
 // Konstruktor
@@ -89,6 +92,9 @@ void ArduinoProtocol::Stop()
 // Thread zum Aktualisieren der Signalstärke
 void ArduinoProtocol::UpdateSignalStrength()
 {
+	// Zähler
+	int i = 0;
+
 	while(true)
 	{
 		// Aktuallisiert die Wlan Signalstärke
@@ -96,6 +102,18 @@ void ArduinoProtocol::UpdateSignalStrength()
 
 		// In der Ruhe liegt die Kraft
 		sleep(5);
+
+		// Alle 30 Sekunden SSID updaten
+		if ( i % 6 == 0)
+		{
+			// Aktuelle SSID setzten
+			SetCurrentSSID();
+
+			// Zähler zurücksetzten
+			i = 0;
+		}
+
+		i++;
 	}
 }
 
@@ -183,6 +201,35 @@ int ArduinoProtocol::GetDistance(unsigned char sensorID)
 
 	// Daten zurückgeben
 	return data;
+}
+
+// Gibt den Messwert zurück. Dabei werden Fehlmessungen ausgeschlossen
+int ArduinoProtocol::GetRealDistance(unsigned char sensorID, int tolerance)
+{
+	int distance[2];
+
+	// Maximale Messungen
+	int max = 10;
+
+	int i = 0;
+	do
+	{
+		// Erste Messung durchführen
+		distance[0] = GetDistance(sensorID);
+
+		// TODO: Evtl. anpassen
+		usleep(10000);
+
+		// Zweite Messung durchführen
+		distance[1] = GetDistance(sensorID);
+
+		// Zähler erhöhen
+		i++;
+	}
+	while(!(distance[0] - distance[1] <= tolerance && distance[0] - distance[1] >= (-1) * tolerance) && i != max);
+
+	// Messwerte zurückgeben
+	return (distance[0] + distance[1]) / 2;
 }
 
 // Ruft den Status des angegebenen Sensors ab, bzw. aktualisiert diesen vorher
@@ -287,7 +334,7 @@ int ArduinoProtocol::ChangeCamPosition(unsigned char camera, int degree)
 	return data;
 }
 
-// Arduino aningen
+// Arduino anpingen
 void ArduinoProtocol::Heartbeat()
 {
 	// Kommunikation sperren
@@ -335,6 +382,9 @@ void ArduinoProtocol::SetCurrentSSID()
 
 		// Das fehlerhafte Zeichen am Ende löschen
 		SSID = SSID.substr(0, SSID.length() - 1);
+
+		// SSID speichern
+		_SSID = SSID;
 
 		// Erstellt neuen Char mit der Länge des Strings
 		BYTE textData[SSID.length()];
@@ -403,6 +453,9 @@ void ArduinoProtocol::SetSignalStrength()
 			strg_value = strg_value < 0 ? 0 : strg_value;
 		}
 
+		// Signalstärke speichern
+		_signalStrength =  strg_value;
+
 		// Paket erstellen:
 		// 4 = Status ändern
 		// 1 = Signalstärke
@@ -420,4 +473,29 @@ void ArduinoProtocol::SetSignalStrength()
 		}
 	}
 	arduinoMutex->unlock();
+}
+
+// Die SSID zurückgeben
+std::string ArduinoProtocol::GetSSID()
+{
+	return _SSID;
+}
+
+// Die SSID zurückgeben
+int ArduinoProtocol::GetSignalStrength()
+{
+	return _signalStrength;
+}
+
+// Die Bandbreite zurückgeben
+std::string ArduinoProtocol::GetBandwidth()
+{
+	// Bandbreite abrufen
+	std::string bandwidth = arduinoCom->Exec("iwconfig wlan0 | grep -i 'Bit Rate' | cut -d = -f 2 | rev | cut -c 17- | rev");
+
+	// Zeilenumbrüche ersetzten
+	std::replace(bandwidth.begin(),bandwidth.end(), '\n',' ');
+
+	// Bandbreite zurückgeben
+	return bandwidth;
 }

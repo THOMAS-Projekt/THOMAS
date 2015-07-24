@@ -14,6 +14,9 @@ using namespace THOMAS;
 // UDP Client Klasse
 #include "UDPClient.h"
 
+// Enthält die Kommunikation für den Arduino
+#include "ArduinoProtocol.h"
+
 // OPENCV-Klassen
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -42,7 +45,7 @@ TelemetryReceiver::TelemetryReceiver()
 
 }
 
-void TelemetryReceiver::Run(int videoDeviceID)
+void TelemetryReceiver::Run(ArduinoProtocol *arduinoProtocol, int videoDeviceID)
 {
 	// Kamera initialisieren
 	_videoCapture = cv::VideoCapture(videoDeviceID);
@@ -62,6 +65,9 @@ void TelemetryReceiver::Run(int videoDeviceID)
 	// Default Qualität => Wird vom Client überschrieben
 	param[1] = 30;
 
+	// ArduinoProtocol speichern
+	_arduino = arduinoProtocol;
+
 	// TCP Server initialisieren
 	_server = new TCPServer(4223, ComputeTCPServerDataWrapper, OnClientStatusChangeWrapper, static_cast<void *>(this));
 	_server->BeginListen();
@@ -69,9 +75,15 @@ void TelemetryReceiver::Run(int videoDeviceID)
 	// Status Informations Klasse initialisieren
 	_statusInformation = new StatusInformation();
 
+	// Neuen Thread erstellen
+	std::thread CPUThread(&StatusInformation::CPUCaptureThreadWrapper, _statusInformation);
+
 	// Neuen Framesverarbeitungs-Thread erstellen
-	std::thread caputeFrameThread(&TelemetryReceiver::CaptureFrameThread, this);
-	caputeFrameThread.join();
+	std::thread captureFrameThread(&TelemetryReceiver::CaptureFrameThread, this);
+
+	// Threads syncronisieren
+	CPUThread.join();
+	captureFrameThread.join();
 }
 
 void TelemetryReceiver::CaptureFrameThread()
@@ -164,6 +176,10 @@ void TelemetryReceiver::OnClientStatusChange(int clientID, int status, const cha
 			// IP setzten
 			UDPClientList[clientID].SetIP(ip);
 
+
+			// CPU-Last Thread aktivieren
+			_statusInformation->SetClientConnectStatus(true);
+
 			break;
 		}
 
@@ -172,6 +188,9 @@ void TelemetryReceiver::OnClientStatusChange(int clientID, int status, const cha
 		{
 			// UDPClient löschen und aus Liste entfernen
 			UDPClientList.erase(clientID);
+
+			// CPU-Last Thread stoppen
+			_statusInformation->SetClientConnectStatus(false);
 
 			break;
 		}
@@ -207,8 +226,9 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 				// Anforderung der CPU-Last
 				case FIELD_CPU:
 				{
+
 					// CPU-Last Sring erstellen
-					std::string CPULoad = std::to_string(static_cast<int>(_statusInformation->GetCPUUsage()));
+					std::string CPULoad = std::to_string(static_cast<int>(_statusInformation->GetCPUUsageSaved()));
 					CPULoad += "%\n";
 
 					// Informationen in Vector Laden
@@ -273,21 +293,62 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 				// Anforderung der SSID
 				case FIELD_SSID:
 				{
-					// TODO: Implementieren
+
+					// SSID String erstellen
+					std::string SSID = _arduino->GetSSID() + "\n";
+
+					// Informationen in Vector Laden
+					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_SSID, SSID));
+
+					// Neuen Byte Buffer erstellen
+					BYTE buff[vecData.size()];
+
+					// Daten in Vector kopieren
+					std::copy(vecData.begin(), vecData.end(), buff);
+
+					// Daten zum Client senden
+					_server->Send(clientID, buff, vecData.size());
+
 					break;
 				}
 
 				// Anforderung der Signal-Stärke
 				case FIELD_SIGNAL:
 				{
-					// TODO: Implementieren
+					// Signalstärken String erstellen
+					std::string signalStrength = std::to_string(_arduino->GetSignalStrength()) + "\n";
+
+					// Informationen in Vector Laden
+					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_SIGNAL, signalStrength));
+
+					// Neuen Byte Buffer erstellen
+					BYTE buff[vecData.size()];
+
+					// Daten in Vector kopieren
+					std::copy(vecData.begin(), vecData.end(), buff);
+
+					// Daten zum Client senden
+					_server->Send(clientID, buff, vecData.size());
 					break;
 				}
 
 				// Anforderung der Bandbreite
 				case FIELD_BANDWIDTH:
 				{
-					// TODO: Implementieren
+					// Bandbreiten String erstellen
+					std::string bandwidth = _arduino->GetBandwidth() + "MBit/s \n";
+
+					// Informationen in Vector Laden
+					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_BANDWIDTH, bandwidth));
+
+					// Neuen Byte Buffer erstellen
+					BYTE buff[vecData.size()];
+
+					// Daten in Vector kopieren
+					std::copy(vecData.begin(), vecData.end(), buff);
+
+					// Daten zum Client senden
+					_server->Send(clientID, buff, vecData.size());
 					break;
 				}
 			}

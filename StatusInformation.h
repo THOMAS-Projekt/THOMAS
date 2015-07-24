@@ -8,6 +8,9 @@ Kann Serverdaten, wie CPU-Last etc. abfragen und zurück geben
 // Enhält das Vector-Element
 #include <vector>
 
+// Mutex-Klasse
+#include <mutex>
+
 /* Klasse */
 namespace THOMAS
 {
@@ -20,6 +23,18 @@ namespace THOMAS
 
 		// CPU Daten abrufen
 		std::vector<int> GetCPUData();
+
+		// Ruft die CPU Last im seperaten Thread auf.
+		void CPUCaptureThread();
+
+		// Ist Client verbunden?
+		bool _status = false;
+
+		// CPU Last
+		float _CPUUsage = 0;
+
+		// Mutex
+		std::mutex CPUMutex;
 
 	public:
 		// Konstruktor
@@ -39,5 +54,17 @@ namespace THOMAS
 		// 1 = Verfügbar
 		// 2 = Benutzt
 		std::vector<int> GetMemoryInfo();
+
+		// Status, ob Client verbunden ist
+		void SetClientConnectStatus(bool status);
+
+		// Gibt die gespeicherte CPU Auslastung zurück
+		float GetCPUUsageSaved();
+
+		// Wraper, um die CPUCaptureThreadWrapper Funktion sauber zu übergeben
+		static void CPUCaptureThreadWrapper(void *obj)
+		{
+			(reinterpret_cast<StatusInformation *>(obj))->CPUCaptureThread();
+		}
 	};
 }

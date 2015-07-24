@@ -63,6 +63,11 @@ namespace THOMAS
 		// ArduinoMutex
 		std::mutex *arduinoMutex;
 
+		// SSID -> Standard Wert setzen
+		std::string _SSID = "undefined";
+
+		int _signalStrength = -1;
+
 		// Status des Threads
 		bool running = false;
 
@@ -94,6 +99,9 @@ namespace THOMAS
 		// Entfernung des Ultraschallsensors auslesen
 		int GetDistance(unsigned char sensorID);
 
+		// Echte Entfernung bestimmen
+		int GetRealDistance(unsigned char sensorID, int tolerance);
+
 		// Sensorstatus abrufen und evtl. vorher aktualisieren
 		int GetStatus(unsigned char sensorID, bool newRequest);
 
@@ -114,6 +122,15 @@ namespace THOMAS
 
 		// Die Signalstärke des verbundenen Netzwerkes an den Arduino senden
 		void SetSignalStrength();
+
+		// Gibt die SSID zurück
+		std::string GetSSID();
+
+		// Gibt die Signalstärke zurück
+		int GetSignalStrength();
+
+		// Gibt die aktuelle Bandbreite zurücl
+		std::string GetBandwidth();
 
 		// Startet einen neuen Thread
 		void Run();

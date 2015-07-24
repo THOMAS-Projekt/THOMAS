@@ -1,16 +1,18 @@
 CPPARGS= -std=c++11 -pthread
-
 OPENCVARGS= `pkg-config --cflags opencv`
 LINKERARGS= -pthread -g -O0 -v -da -Q `pkg-config --libs opencv`
 
-all: main.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o THOMASException.o TelemetryReceiver.o UDPClient.o StatusInformation.o
-	g++ $(OPENCVARGS) THOMASException.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o TelemetryReceiver.o UDPClient.o StatusInformation.o main.o -o thomas $(LINKERARGS)
+all: main.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o THOMASException.o TelemetryReceiver.o UDPClient.o StatusInformation.o CollisionDetection.o
+	g++ $(OPENCVARGS) THOMASException.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o TelemetryReceiver.o UDPClient.o StatusInformation.o main.o CollisionDetection.o -o thomas $(LINKERARGS)
 
 main.o: main.cpp
 	g++ -c main.cpp $(CPPARGS)
 
 test: test.o TCPServer.o
 	g++ TCPServer.o test.o -o test $(LINKERARGS)
+
+mct: MotorControlTest.o RS232.o THOMASException.o
+	g++ MotorControlTest.o RS232.o THOMASException.o -o mct $(LINKERARGS)
 
 test.o: test.cpp
 	g++ -c test.cpp $(CPPARGS)
@@ -42,5 +44,11 @@ UDPClient.o: UDPClient.cpp UDPClient.h
 StatusInformation.o: StatusInformation.cpp StatusInformation.h
 	g++ -c StatusInformation.cpp $(CPPARGS)
 
+CollisionDetection.o: CollisionDetection.cpp CollisionDetection.h
+	g++ -c CollisionDetection.cpp $(CPPARGS)
+
+MotorControlTest.o: MotorControlTest.cpp
+	g++ -c MotorControlTest.cpp $(CPPARGS)
+
 clean:
-	rm -rf ./*.o thomas test
+	rm -rf ./*.o thomas mct test

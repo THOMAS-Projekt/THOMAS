@@ -30,13 +30,17 @@ using namespace THOMAS;
 // Programm-Einstiegsfunktion.
 int main(int argc, char **argv)
 {
+	// Arduino Protokoll-Klasse starten
+	ArduinoProtocol *arduino = new ArduinoProtocol();
+	arduino->Run();
+
 	// Motorsteuerung starten
 	MotorControl *motorControl = new MotorControl();
-	motorControl->Run();
+	motorControl->Run(arduino);
 
 	// TelemetryReceiver starten
 	TelemetryReceiver *teleRecv = new TelemetryReceiver();
-	teleRecv->Run();
+	teleRecv->Run(arduino);
 
 	// Programm laufen lassen, Prozessor nicht unnötig belasten (alles läuft in separaten Threads)
 	// TODO: Programm-Befehle per Tastatur etc.

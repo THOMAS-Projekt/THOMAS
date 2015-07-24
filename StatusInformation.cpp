@@ -19,11 +19,43 @@
 // Enthält die statvfs-Struktur => Festplatten informationen
 #include <sys/statvfs.h>
 
+// Enthält die Thread-Klasse
+#include <thread>
+
 using namespace THOMAS;
 
 StatusInformation::StatusInformation()
 {
 
+}
+
+void StatusInformation::CPUCaptureThread()
+{
+	while(true)
+	{
+		// Wenn kein Client connectet ist, CPU nicht unnötig belasten
+		while(!_status)
+			usleep(50000);
+
+		// Zugriff von anderen Threads sperren
+		CPUMutex.lock();
+
+		// Prozessorauslastung abfragen und speichern
+		_CPUUsage = GetCPUUsage();
+
+		// Zugriff von anderen Threads erlauben
+		CPUMutex.unlock();
+
+		// 200ms warten
+		usleep(50000);
+	}
+}
+
+// Status ändern => Wenn Client connected
+void StatusInformation::SetClientConnectStatus(bool status)
+{
+	//Status setzten
+	_status = status;
 }
 
 std::vector<int> StatusInformation::GetMemoryInfo()
@@ -95,6 +127,13 @@ int StatusInformation::CalculateSum(std::vector<int> data, int start, int end)
 
 	// Gibt die errechnete Summe zurück
 	return sum;
+}
+
+// Gibt die gespeicherte CPU Auslastung zurück.
+float StatusInformation::GetCPUUsageSaved()
+{
+	// CPU Last zurück geben
+	return _CPUUsage;
 }
 
 float StatusInformation::GetCPUUsage()

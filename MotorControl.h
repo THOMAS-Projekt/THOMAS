@@ -18,6 +18,9 @@ Verzögerte Beschleunigungen werden eingesetzt, um abrupte Geschwindigkeitsände
 // ArduinoProtocol-Klasse
 #include "ArduinoProtocol.h"
 
+// CollisionDetection-Klasse
+#include "CollisionDetection.h"
+
 // C++-mutex-Klasse
 #include <mutex>
 
@@ -81,11 +84,17 @@ namespace THOMAS
 		// Der TCP-Server.
 		TCPServer *_server;
 
+		// Kollision-Detection Klasse
+		CollisionDetection *_collisionDetection;
+
 		// Der Motorgeschwindigkeits-Anpassungs-Thread.
 		std::thread *_controlMotorSpeedThread;
 
 		// Der Tastenverarbeitungs-Thread.
 		std::thread *_computeInputButtonsThread;
+
+		// Thread, der die USensor Daten aktuallisiert
+		std::thread *_updateUSensorData;
 
 		// Speichert die jeweils letzten gesendeten Motorgeschwindigkeiten.
 		// Hiermit werden die benötigten Drehrichtungswechsel-Befehle der Motoren realisiert.
@@ -199,7 +208,7 @@ namespace THOMAS
 		~MotorControl();
 
 		// Startet die Motorsteuerung.
-		void Run();
+		void Run(ArduinoProtocol *arduinoProtocol);
 
 		// Beendet die Motorsteuerung.
 		void Stop();
