@@ -73,6 +73,9 @@ namespace THOMAS
 		// Die letzte Laserposition
 		int _lastLaserPosition = -1;
 
+		// Der letzte Abstandswert
+		int _lastDistance = -1;
+
 	public:
 		// Konstruktor
 		LaserMeasurement();
@@ -82,6 +85,9 @@ namespace THOMAS
 
 		// Gibt die letzte Laserposition zurück
 		int GetLastLaserPosition();
+
+		// Gibt den letzten Abstandswert zurück
+		int GetLastDistance();
 
 	};
 }

@@ -36,18 +36,24 @@ int LaserMeasurement::GetDistanceFromImage(cv::Mat frame)
 	// Laserposition abrufen
 	float laserPosition = GetLaserPosition(frame, BAR_START, BAR_START + BAR_HEIGHT);
 
-        // LaserPosition merken
-        _lastLaserPosition = laserPosition;
+	// LaserPosition merken
+	_lastLaserPosition = laserPosition;
 
 	// Wert auf Gültigkeit überprüfen
 	if(laserPosition < 0)
 	{
+		// Abstandswert merken
+		_lastDistance = -1;
+
 		// Spar dir die Berechnung, kommt sowieso Müll raus
-		return 0;
+		return -1;
 	}
 
 	// Distanz berechnen
 	float distance = (-LASER_DISTANCE / tan(ALPHA)) / (2 * (CAMERA_WIDTH / 2 - laserPosition) / CAMERA_WIDTH * tan(GAMMA / 2) / tan(ALPHA) - 1);
+
+	// Abstandswert merken
+	_lastDistance = distance;
 
 	// Distanz zurückgeben
 	return distance;
@@ -154,6 +160,12 @@ int LaserMeasurement::GetLastLaserPosition()
 {
 	// Letze Laserposition zurückgeben
 	return _lastLaserPosition;
+}
+
+int LaserMeasurement::GetLastDistance()
+{
+	// Letzen Abstandswert zurückgeben
+	return _lastDistance;
 }
 
 int LaserMeasurement::GetBrightnessAvg(std::vector<int> bar, int avgStart, int avgStop)
