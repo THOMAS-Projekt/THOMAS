@@ -46,6 +46,7 @@
 #define FIELD_SSID 3
 #define FIELD_SIGNAL 4
 #define FIELD_BANDWIDTH 5
+#define FIELD_LASER_DISTANCE 6
 
 // Kamera-ID
 #define CAMERA 0

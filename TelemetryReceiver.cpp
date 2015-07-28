@@ -365,10 +365,30 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 				case FIELD_BANDWIDTH:
 				{
 					// Bandbreiten String erstellen
-					std::string bandwidth = _arduino->GetBandwidth() + "MBit/s \n";
+					std::string bandwidth = _arduino->GetBandwidth() + "MBit/s\n";
 
 					// Informationen in Vector Laden
 					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_BANDWIDTH, bandwidth));
+
+					// Neuen Byte Buffer erstellen
+					BYTE buff[vecData.size()];
+
+					// Daten in Vector kopieren
+					std::copy(vecData.begin(), vecData.end(), buff);
+
+					// Daten zum Client senden
+					_server->Send(clientID, buff, vecData.size());
+					break;
+				}
+
+				// Anforderung des Laser-Abstandswertes
+				case FIELD_LASER_DISTANCE:
+				{
+					// Entfernungs String erstellen
+					std::string distance = _laser->GetLastDistance() + "cm\n";
+
+					// Informationen in Vector Laden
+					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_LASER_DISTANCE, distance));
 
 					// Neuen Byte Buffer erstellen
 					BYTE buff[vecData.size()];
