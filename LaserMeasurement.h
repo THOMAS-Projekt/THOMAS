@@ -54,7 +54,7 @@ Diese Klasse misst die Entfernung zum Laserpunkt
 #define ALPHA 24 * PI / 180
 
 // Kamerawinkel (siehe Zeichnung)
-#define GAMMA 50.1 * PI / 180
+#define GAMMA 52.5 * PI / 180
 
 
 /* KLASSE */
