@@ -70,9 +70,9 @@ int LaserMeasurement::GetLaserPosition(cv::Mat frame, int startY, int endY)
 		for(int y = startY; y < endY; y++)
 		{
 			// BGR Werte abrufen
-			int b = frame.at<cv::Vec3b>(y,x)[0];
-			int g = frame.at<cv::Vec3b>(y,x)[1];
-			int r = frame.at<cv::Vec3b>(y,x)[2];
+			int b = frame.at<cv::Vec3b>(y, x)[0];
+			int g = frame.at<cv::Vec3b>(y, x)[1];
+			int r = frame.at<cv::Vec3b>(y, x)[2];
 
 			// Helligkeit berechnen
 			int brightness = b + g + r;
@@ -133,8 +133,8 @@ int LaserMeasurement::GetBrightnessAvg(std::vector<int> bar, int avgStart, int a
 	// Division durch 0 verhindern
 	if(avgStart < 0 || avgStop - avgStart <= 0 || avgStop >= bar.size())
 	{
-		// 0 zurückgeben
-		return 0;
+		// Größtmöglichen Wert zurückgeben
+		return 255 * 3;
 	}
 
 	// Summe der Brightness

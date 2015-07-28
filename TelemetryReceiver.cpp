@@ -111,6 +111,9 @@ void TelemetryReceiver::CaptureFrameThread()
 		// Neuen Frame erstellen
 		_videoCapture >> frame;
 
+// TODO: Sobald die Scannfunktionen implementiert sind dies hier löschen
+_laser->GetDistanceFromImage(frame);
+
 		// Farben in 8Bit konvertieren
 		cvtColor(frame, frame, CV_8U);
 

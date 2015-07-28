@@ -56,7 +56,7 @@
 #define CAMERA_MAX_FPS 30
 
 // Position des Laser-Markierungs-Markers
-#define LASER_MARKER_POSITION 640
+#define LASER_MARKER_POSITION 360
 
 namespace THOMAS {
 
