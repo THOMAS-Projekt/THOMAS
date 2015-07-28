@@ -17,6 +17,9 @@ using namespace THOMAS;
 // Enthält die Kommunikation für den Arduino
 #include "ArduinoProtocol.h"
 
+// Enthält die Funktionen zur Lasergestützten Abstandsmessung
+#include "LaserMeasurement.h"
+
 // OPENCV-Klassen
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -45,10 +48,10 @@ TelemetryReceiver::TelemetryReceiver()
 
 }
 
-void TelemetryReceiver::Run(ArduinoProtocol *arduinoProtocol, int videoDeviceID)
+void TelemetryReceiver::Run(ArduinoProtocol *arduinoProtocol, LaserMeasurement *laserMeasurement)
 {
 	// Kamera initialisieren
-	_videoCapture = cv::VideoCapture(videoDeviceID);
+	_videoCapture = cv::VideoCapture(CAMERA);
 
 	// Erfolgreich geöffnet
 	if(!_videoCapture.isOpened())
@@ -67,6 +70,9 @@ void TelemetryReceiver::Run(ArduinoProtocol *arduinoProtocol, int videoDeviceID)
 
 	// ArduinoProtocol speichern
 	_arduino = arduinoProtocol;
+
+	// LaserMeasurement speichern
+	_laser = laserMeasurement;
 
 	// TCP Server initialisieren
 	_server = new TCPServer(4223, ComputeTCPServerDataWrapper, OnClientStatusChangeWrapper, static_cast<void *>(this));
@@ -108,6 +114,26 @@ void TelemetryReceiver::CaptureFrameThread()
 		// Farben in 8Bit konvertieren
 		cvtColor(frame, frame, CV_8U);
 
+		// Letze Laserposition abrufen
+		int lastLaserPosition = _laser->GetLastLaserPosition();
+
+		// Laserposition auf Gültigkeit überprüfen
+		if(lastLaserPosition >= 0)
+		{
+			// Startpunkt bestimmen
+			cv::Point startPoint;
+			startPoint.x = lastLaserPosition;
+			startPoint.y = LASER_MARKER_POSITION - 50;
+
+			// Endpunkt bestimmen
+			cv::Point endPoint;
+			endPoint.x = lastLaserPosition;
+			endPoint.y = LASER_MARKER_POSITION + 50;
+
+			// Position einzeichnen
+			cv::line(frame, startPoint, endPoint, cv::Scalar(0, 0, 255), 3);
+		}
+
 		// JPEG Format setzten
 		param[0] = CV_IMWRITE_JPEG_QUALITY;
 
@@ -127,7 +153,7 @@ void TelemetryReceiver::CaptureFrameThread()
 			cv::Mat clientFrame;
 
 			// Bilder auf die gewünschte Größe anpassen
-			cv::resize(frame,clientFrame, cv::Size(CAMERA_WIDTH*((float) client.second.GetFrameSize()/100),CAMERA_HEIGHT*((float) client.second.GetFrameSize()/100)));
+			cv::resize(frame,clientFrame, cv::Size(CAMERA_WIDTH * ((float) client.second.GetFrameSize() / 100), CAMERA_HEIGHT * ((float) client.second.GetFrameSize() / 100)));
 
 			// Kompressionsrate setzten
 			param[1] = client.second.GetFrameQuality();
@@ -152,7 +178,7 @@ void TelemetryReceiver::CaptureFrameThread()
 				if(i == buff.size() - 1)
 				{
 					// Array mit restlichen Bytes erstellen
-					std::vector<uchar> newBuff(buff.begin() + 64000*((int) buff.size() / 64000), buff.end());
+					std::vector<uchar> newBuff(buff.begin() + 64000 * ((int) buff.size() / 64000), buff.end());
 
 					// Bytes senden
 					client.second.Send(newBuff);

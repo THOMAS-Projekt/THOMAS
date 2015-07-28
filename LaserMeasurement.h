@@ -19,19 +19,14 @@ Diese Klasse misst die Entfernung zum Laserpunkt
 
 /* KONSTANTEN */
 
-// Verwendete Kamera
-#define CAMERA 1
-
 // Kamera Einstellungen
 #define CAMERA_WIDTH 1280
-#define CAMERA_HEIGHT 720
-#define CAMERA_MAX_FPS 30
-
-// Höhe des Erkennungsbalkens
-#define BAR_HEIGHT 60
 
 // Startpunkt (Y) des Erkennungsbalkens
 #define BAR_START 330
+
+// Höhe des Erkennungsbalkens
+#define BAR_HEIGHT 60
 
 // Mindest- und Maximalgröße des Laserpunktes
 #define LASER_MIN_WIDTH 1
@@ -69,14 +64,14 @@ namespace THOMAS
 	class LaserMeasurement
 	{
 	private:
-		// VideoCapture Device
-		cv::VideoCapture _videoCapture;
-
 		// Gibt die Laserpositon zurück
 		int GetLaserPosition(cv::Mat frame, int startY, int endY);
 
 		// Ermittelt die Helligkeit für einen bestimmten Abschnitt
 		int GetBrightnessAvg(std::vector<int> bar, int avgStart, int avgStop);
+
+		// Die letzte Laserposition
+		int _lastLaserPosition = -1;
 
 	public:
 		// Konstruktor
@@ -84,5 +79,9 @@ namespace THOMAS
 
 		// Ermittelt die Entfernung in einem Image
 		int GetDistanceFromImage(cv::Mat frame);
+
+		// Gibt die letzte Laserposition zurück
+		int GetLastLaserPosition();
+
 	};
 }

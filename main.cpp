@@ -38,9 +38,12 @@ int main(int argc, char **argv)
 	MotorControl *motorControl = new MotorControl();
 	motorControl->Run(arduino);
 
+	// Lasermessung instanzieren
+	LaserMeasurement *laser = new LaserMeasurement();
+
 	// TelemetryReceiver starten
 	TelemetryReceiver *teleRecv = new TelemetryReceiver();
-	teleRecv->Run(arduino);
+	teleRecv->Run(arduino, laser);
 
 	// Programm laufen lassen, Prozessor nicht unnötig belasten (alles läuft in separaten Threads)
 	// TODO: Programm-Befehle per Tastatur etc.

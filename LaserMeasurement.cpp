@@ -28,29 +28,26 @@ using namespace THOMAS;
 
 LaserMeasurement::LaserMeasurement()
 {
-	_videoCapture = cv::VideoCapture(CAMERA);
 
-	// Kamera Größenparameter setzten
-	_videoCapture.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH);
-	_videoCapture.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT);
-	_videoCapture.set(CV_CAP_PROP_FPS, CAMERA_MAX_FPS);
-
-	cv::Mat frame;
-
-	while(true)
-	{
-		_videoCapture >> frame;
-		GetDistanceFromImage(frame);
-	}
 }
 
 int LaserMeasurement::GetDistanceFromImage(cv::Mat frame)
 {
-	// Laserposition abrufen und auf Mittelpunkt beziehen
-	float laserPosition = CAMERA_WIDTH / 2 - GetLaserPosition(frame, BAR_START, BAR_START + BAR_HEIGHT);
+	// Laserposition abrufen
+	float laserPosition = GetLaserPosition(frame, BAR_START, BAR_START + BAR_HEIGHT);
+
+	// Wert auf Gültigkeit überprüfen
+	if(laserPosition < 0)
+	{
+		// Spar dir die Berechnung, kommt sowieso Müll raus
+		return 0;
+	}
+
+	// LaserPosition merken
+	_lastLaserPosition = laserPosition;
 
 	// Distanz berechnen
-	float distance = (-LASER_DISTANCE / tan(ALPHA)) / (2 * laserPosition / CAMERA_WIDTH * tan(GAMMA / 2) / tan(ALPHA) - 1);
+	float distance = (-LASER_DISTANCE / tan(ALPHA)) / (2 * (CAMERA_WIDTH / 2 - laserPosition) / CAMERA_WIDTH * tan(GAMMA / 2) / tan(ALPHA) - 1);
 
 	// Distanz zurückgeben
 	return distance;
@@ -123,6 +120,12 @@ int LaserMeasurement::GetLaserPosition(cv::Mat frame, int startY, int endY)
 
 	// Keinen Laserpunkt gefunden
 	return -1;
+}
+
+int LaserMeasurement::GetLastLaserPosition()
+{
+	// Letze Laserposition zurückgeben
+	return _lastLaserPosition;
 }
 
 int LaserMeasurement::GetBrightnessAvg(std::vector<int> bar, int avgStart, int avgStop)

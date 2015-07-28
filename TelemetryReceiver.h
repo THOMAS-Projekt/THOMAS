@@ -12,6 +12,9 @@
 // Enthält die Kommunikation für den Arduino
 #include "ArduinoProtocol.h"
 
+// Enthält die Funktionen zur Lasergestützten Abstandsmessung
+#include "LaserMeasurement.h"
+
 // OpenCV implementieren
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -44,10 +47,16 @@
 #define FIELD_SIGNAL 4
 #define FIELD_BANDWIDTH 5
 
+// Kamera-ID
+#define CAMERA 0
+
 // Kamera Einstellungen
 #define CAMERA_WIDTH 1280
 #define CAMERA_HEIGHT 720
 #define CAMERA_MAX_FPS 30
+
+// Position des Laser-Markierungs-Markers
+#define LASER_MARKER_POSITION 640
 
 namespace THOMAS {
 
@@ -68,6 +77,9 @@ namespace THOMAS {
 
 		// ArduinoProtocol Klasse
 		ArduinoProtocol *_arduino;
+
+		// LaserMeasurement Klasse
+		LaserMeasurement *_laser;
 
 		// VideoCapture Device
 		cv::VideoCapture _videoCapture;
@@ -112,7 +124,7 @@ namespace THOMAS {
 		TelemetryReceiver();
 
 		// Wird beim Start ausgeführt
-		void Run(ArduinoProtocol *arduinoProtocol, int videoDeviceID = 0);
+		void Run(ArduinoProtocol *arduinoProtocol, LaserMeasurement *laserMeasurement);
 
 	};
 }
