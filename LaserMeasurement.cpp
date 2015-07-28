@@ -20,7 +20,7 @@ using namespace THOMAS;
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-// Enthält die pow Funktion für Quadrate
+// Enthält die Tangens-Funktion
 #include <math.h>
 
 
@@ -36,15 +36,15 @@ int LaserMeasurement::GetDistanceFromImage(cv::Mat frame)
 	// Laserposition abrufen
 	float laserPosition = GetLaserPosition(frame, BAR_START, BAR_START + BAR_HEIGHT);
 
+        // LaserPosition merken
+        _lastLaserPosition = laserPosition;
+
 	// Wert auf Gültigkeit überprüfen
 	if(laserPosition < 0)
 	{
 		// Spar dir die Berechnung, kommt sowieso Müll raus
 		return 0;
 	}
-
-	// LaserPosition merken
-	_lastLaserPosition = laserPosition;
 
 	// Distanz berechnen
 	float distance = (-LASER_DISTANCE / tan(ALPHA)) / (2 * (CAMERA_WIDTH / 2 - laserPosition) / CAMERA_WIDTH * tan(GAMMA / 2) / tan(ALPHA) - 1);
@@ -60,6 +60,9 @@ int LaserMeasurement::GetLaserPosition(cv::Mat frame, int startY, int endY)
 
 	// Endpunkt des untersuchten Bereiches
 	int sectionEnd = -1;
+
+	// Helligkeit des Endpunktes
+	int sectionEndBrightness = 0;
 
 	std::vector<int> bar;
 
@@ -114,20 +117,25 @@ int LaserMeasurement::GetLaserPosition(cv::Mat frame, int startY, int endY)
 				{
 					// Endpunkt setzen
 					sectionEnd = x;
-				}
 
-				// Startpunkt zurücksetzen
-				sectionStart = -1;
+					// Helligkeit des Endpunktes merken
+					sectionEndBrightness = topBrightness;
+				}
+				else
+				{
+					// Startpunkt zurücksetzen
+					sectionStart = -1;
+				}
 			}
 		}
 		else if(sectionEnd + AVG_CHECK_OFFSET + AVG_CHECK_WIDTH <= x)
 		{
 			// Prüfe:
 			// 1. Die durchschnittliche Helligkeit nach dem Abschnitt weist einen großen Kontrast auf
-			if(GetBrightnessAvg(bar, x + AVG_CHECK_OFFSET, x + (AVG_CHECK_WIDTH + AVG_CHECK_OFFSET)) < topBrightness - AVG_CHECK_BRIGHTNESS_OFFSET)
+			if(GetBrightnessAvg(bar, sectionEnd + AVG_CHECK_OFFSET, sectionEnd + (AVG_CHECK_WIDTH + AVG_CHECK_OFFSET)) < sectionEndBrightness - AVG_CHECK_BRIGHTNESS_OFFSET)
 			{
 				// Mittelpunkt des Laserpunktes zurückgeben
-				return sectionStart + (x - sectionStart) / 2;
+				return sectionStart + (sectionEnd - sectionStart) / 2;
 			}
 			else
 			{
