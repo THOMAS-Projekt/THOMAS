@@ -55,8 +55,11 @@ int LaserMeasurement::GetDistanceFromImage(cv::Mat frame)
 
 int LaserMeasurement::GetLaserPosition(cv::Mat frame, int startY, int endY)
 {
-	// Startpunkt des Suchlaufes
+	// Startpunkt des untersuchten Bereiches
 	int sectionStart = -1;
+
+	// Endpunkt des untersuchten Bereiches
+	int sectionEnd = -1;
 
 	std::vector<int> bar;
 
@@ -88,33 +91,50 @@ int LaserMeasurement::GetLaserPosition(cv::Mat frame, int startY, int endY)
 		// Die größte Helligkeit speichern
 		bar.push_back(topBrightness);
 
-		// Ist die Helligkeit größer als der Mindestwert
-		if(topBrightness > MIN_BRIGHTNESS)
+		if(sectionEnd == -1)
 		{
-			// Prüfe:
-			// 1. Es hat noch kein Abschnitt begonnen
-			// 2. Durchschnittliche Helligkeit vor dem Abschnitt weist einen großen Kontrast auf
-			if(sectionStart == -1 && GetBrightnessAvg(bar, x - (AVG_CHECK_WIDTH + AVG_CHECK_OFFSET), x - AVG_CHECK_OFFSET) < topBrightness - AVG_CHECK_BRIGHTNESS_OFFSET)
+			// Ist die Helligkeit größer als der Mindestwert
+			if(topBrightness > MIN_BRIGHTNESS)
 			{
-				// Startpunkt setzen
-				sectionStart = x;
+				// Prüfe:
+				// 1. Es hat noch kein Abschnitt begonnen
+				// 2. Durchschnittliche Helligkeit vor dem Abschnitt weist einen großen Kontrast auf
+				if(sectionStart == -1 && GetBrightnessAvg(bar, x - (AVG_CHECK_WIDTH + AVG_CHECK_OFFSET), x - AVG_CHECK_OFFSET) < topBrightness - AVG_CHECK_BRIGHTNESS_OFFSET)
+				{
+					// Startpunkt setzen
+					sectionStart = x;
+				}
+			}
+			else
+			{
+				// Prüfe:
+				// 1. Es hat bereits ein Abschnitt begonnen
+				// 2. Die Laserbreite entspricht den Mindest- und Maximalwerten
+				if(sectionStart != -1 && x - sectionStart > LASER_MIN_WIDTH && x - sectionStart < LASER_MAX_WIDTH)
+				{
+					// Endpunkt setzen
+					sectionEnd = x;
+				}
+
+				// Startpunkt zurücksetzen
+				sectionStart = -1;
 			}
 		}
-		else
+		else if(sectionEnd + AVG_CHECK_OFFSET + AVG_CHECK_WIDTH <= x)
 		{
 			// Prüfe:
-			// 1. Es hat bereits ein Abschnitt begonnen
-			// 2. Die Laserbreite entspricht den Mindest- und Maximalwerten
-			// 3. Die durchschnittliche Helligkeit nach dem Abschnitt weist einen großen Kontrast auf
-			if(sectionStart != -1 && x - sectionStart > LASER_MIN_WIDTH && x - sectionStart < LASER_MAX_WIDTH && GetBrightnessAvg(bar, x + AVG_CHECK_OFFSET, x + (AVG_CHECK_WIDTH + AVG_CHECK_OFFSET)) < topBrightness - AVG_CHECK_BRIGHTNESS_OFFSET)
+			// 1. Die durchschnittliche Helligkeit nach dem Abschnitt weist einen großen Kontrast auf
+			if(GetBrightnessAvg(bar, x + AVG_CHECK_OFFSET, x + (AVG_CHECK_WIDTH + AVG_CHECK_OFFSET)) < topBrightness - AVG_CHECK_BRIGHTNESS_OFFSET)
 			{
 				// Mittelpunkt des Laserpunktes zurückgeben
 				return sectionStart + (x - sectionStart) / 2;
 			}
-
-			// Startpunkt zurücksetzen
-			sectionStart = -1;
-
+			else
+			{
+				// Weiter geht's
+				sectionStart = -1;
+				sectionEnd = -1;
+			}
 		}
 	}
 
