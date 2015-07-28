@@ -384,8 +384,19 @@ void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int cli
 				// Anforderung des Laser-Abstandswertes
 				case FIELD_LASER_DISTANCE:
 				{
-					// Entfernungs String erstellen
-					std::string distance = _laser->GetLastDistance() + "cm\n";
+					// Abstandswert abrufen
+					int laserDistance = _laser->GetLastDistance();
+
+					// Entfernungs String
+					std::string distance = "Unbekannt\n";
+
+					// Wert auf Gültigkeit überprüfen
+					if (laserDistance >= 0)
+					{
+						// Entfernungs String erstellen
+						distance = std::to_string(laserDistance);
+						distance += "cm\n";
+					}
 
 					// Informationen in Vector Laden
 					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_LASER_DISTANCE, distance));
