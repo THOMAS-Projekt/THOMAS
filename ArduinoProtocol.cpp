@@ -39,7 +39,7 @@ ArduinoProtocol::ArduinoProtocol()
 }
 
 // Erstellt neuen Thread
-void ArduinoProtocol::Run()
+void ArduinoProtocol::Run(bool minimalMode)
 {
 	// Läuft die Kommunikation schon?
 	if(running)
@@ -57,6 +57,9 @@ void ArduinoProtocol::Run()
 	// Programm bis zum ersten Lebenszeichen des Arduinos pausieren
 	// (Der Arduino startet beim Verbinden erst neu.)
 	WaitForArduino();
+
+	// Sendet den Betriebsmodus
+	SendMode(minimalMode);
 
 	// FIXME: Es ist nicht möglich längere Texte zu senden, da der Arduino sich dabei aus irgendeinem Grund aufhängt bzw. neustartet.
 	// FIXME: Möglicherweise liegt hier ein Problem wegen des horizontalen Scrollens vor, welches ich nicht finden konnte.
@@ -319,6 +322,27 @@ void ArduinoProtocol::WaitForArduino()
 		resp = (int) arduinoCom->Receive()[0];
 	}
 	while(resp != 0);
+}
+
+void ArduinoProtocol::SendMode(bool minimalMode)
+{
+	// Kommunikation sperren
+	arduinoMutex->lock();
+	{
+		// Das Ping-Paket
+		UBYTE package[2] = {5, minimalMode};
+
+		// Paket an den Arduino senden
+		arduinoCom->Send(package, 2);
+
+		// Wert korrekt?
+		if((int) arduinoCom->Receive()[0] != 1)
+		{
+			// Fehler
+			throw THOMASException("Fehler: Der Arduino hält sich nicht an das Protokoll!");
+		}
+	}
+	arduinoMutex->unlock();
 }
 
 // Die SSID des verbundenen Netzwerkes an den Arduino senden

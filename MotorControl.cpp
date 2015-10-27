@@ -43,7 +43,7 @@ MotorControl::MotorControl()
 MotorControl::~MotorControl()
 {
 	// Steuerung ggf. stoppen
-	if(_running)
+	if (_running)
 		Stop();
 
 	// Joystick-Daten-Arrays vernichten
@@ -54,10 +54,10 @@ MotorControl::~MotorControl()
 	delete _joystickMutex;
 }
 
-void MotorControl::Run(ArduinoProtocol *arduinoProtocol)
+void MotorControl::Run(ArduinoProtocol *arduinoProtocol, bool enableCollisionDetection)
 {
 	// Läuft die Steuerung schon?
-	if(_running)
+	if (_running)
 		throw THOMASException("Fehler: Die Motorsteuerung ist bereits aktiv!");
 	_running = true;
 
@@ -74,8 +74,11 @@ void MotorControl::Run(ArduinoProtocol *arduinoProtocol)
 	// RS232-Verbindung herstellen
 	_rs232 = new RS232();
 
-	// CollisionDetection initialisieren
-	_collisionDetection = new CollisionDetection(_arduino);
+	// Soll die Collisiondetection aktiviert werden?
+	if (enableCollisionDetection) {
+		// CollisionDetection initialisieren
+		_collisionDetection = new CollisionDetection(_arduino);
+	}
 
 	// Relay-Steuerung initialisieren
 	_relayProtocol = new RelayProtocol();
@@ -86,8 +89,11 @@ void MotorControl::Run(ArduinoProtocol *arduinoProtocol)
 	// Tastendruckverarbeitung starten
 	_computeInputButtonsThread = new std::thread(&MotorControl::ComputeInputButtonsWrapper, this);
 
-	// UpdateUsensorDataThread starten
-	_updateUSensorData = new std::thread(&CollisionDetection::UpdateUSensorDataWrapper, _collisionDetection);
+	// Soll die Collisiondetection aktiviert werden?
+	if (enableCollisionDetection) {
+		// UpdateUsensorDataThread starten
+		_updateUSensorData = new std::thread(&CollisionDetection::UpdateUSensorDataWrapper, _collisionDetection);
+	}
 
 	// Server starten
 	_server = new TCPServer(4242, ComputeClientCommandWrapper, OnClientStatusChangeWrapper, static_cast<void *>(this));
@@ -97,7 +103,7 @@ void MotorControl::Run(ArduinoProtocol *arduinoProtocol)
 void MotorControl::Stop()
 {
 	// Läuft die Steuerung?
-	if(!_running)
+	if (!_running)
 		throw THOMASException("Fehler: Die Motorsteuerung ist nicht aktiv!");
 	_running = false;
 
@@ -123,30 +129,30 @@ void MotorControl::Stop()
 void MotorControl::ControlMotorSpeed()
 {
 	// Auf Initialisierung der Joystick-Daten-Arrays warten
-	while(!_joystickDataOK)
+	while (!_joystickDataOK)
 		usleep(100000);
 
 	// Motorgeschwindigkeit kontinuierlich regeln, bis die Motorsteuerung beendet wird
 	float corrSum; // Joystick-Korrektursumme
 	short wantedSpeed[2] = {0, 0}; // Die angestrebte Geschwindigkeit {links, rechts}
-	short newWantedSpeed[2] = {0,0}; // Anhand der Sensordaten korrigierte Geschwindigkeit
+	short newWantedSpeed[2] = {0, 0}; // Anhand der Sensordaten korrigierte Geschwindigkeit
 	bool overwriteSpeed = false; // Gibt an ob die Beschleuningung umgangen werden soll
 
 	std::vector<short> speedVector (2); // Vector mit der Geschwindigkeit
 
-	while(_running)
+	while (_running)
 	{
 		// Joystick-Daten sperren
 		_joystickMutex->lock();
 		{
 			// Steuerung nach X- und Z-Achse bei Joystick-Auslenkung >= 10%, Steuerung nach R-Achse bei Joystick-Auslenkung < 10%
-			if(abs(_joystickAxis[0]) >= _joystickNoPowerZone || abs(_joystickAxis[1]) >= _joystickNoPowerZone)
+			if (abs(_joystickAxis[0]) >= _joystickNoPowerZone || abs(_joystickAxis[1]) >= _joystickNoPowerZone)
 			{
 				// Joystick-Korrektursumme berechnen
 				corrSum = static_cast<float>(abs(_joystickAxis[0]) + abs(_joystickAxis[1]));
 
 				// Nach Korrektursumme unterscheiden
-				if(corrSum <= _joystickMaxAxis)
+				if (corrSum <= _joystickMaxAxis)
 				{
 					// Es muss nicht korrigiert werden, Geschwindigkeiten direkt berechnen
 					wantedSpeed[MLEFT_ARR] = -static_cast<short>(_joystickAxisInvConv * (-_joystickAxis[0] + _joystickAxis[1]));
@@ -183,7 +189,7 @@ void MotorControl::ControlMotorSpeed()
 		// Geschwindigkeitswerte angleichen: Links
 		{
 			// Würde die direkte Annahme der Wunschgeschwindigkeit in diesem Takt die Maximalbeschleunigung überschreiten?
-			if(!overwriteSpeed && abs(wantedSpeed[MLEFT_ARR] - _lastSpeed[MLEFT_ARR]) > _speedMaxAcc)
+			if (!overwriteSpeed && abs(wantedSpeed[MLEFT_ARR] - _lastSpeed[MLEFT_ARR]) > _speedMaxAcc)
 			{
 				// Motor angemessen beschleunigen, auch wenn Wunschgeschwindigkeit nicht erreicht wird
 				// Der ternäre Operator ist hier die schönste und kürzeste Variante; er passt nur je nach Vorzeichen der Geschwindigkeitsdifferenz das Vorzeichen der Beschleunigung an.
@@ -199,7 +205,7 @@ void MotorControl::ControlMotorSpeed()
 		// Geschwindigkeitswerte angleichen: Rechts
 		{
 			// Überschreitung der Maximalbeschleunigung?
-			if(!overwriteSpeed && abs(wantedSpeed[MRIGHT_ARR] - _lastSpeed[MRIGHT_ARR]) > _speedMaxAcc)
+			if (!overwriteSpeed && abs(wantedSpeed[MRIGHT_ARR] - _lastSpeed[MRIGHT_ARR]) > _speedMaxAcc)
 			{
 				// Motor angemessen beschleunigen
 				SendMotorSpeed(MRIGHT, _lastSpeed[MRIGHT_ARR] + (wantedSpeed[MRIGHT_ARR] > _lastSpeed[MRIGHT_ARR] ? _speedMaxAcc : -_speedMaxAcc));
@@ -222,7 +228,7 @@ void MotorControl::ControlMotorSpeed()
 void MotorControl::ComputeInputButtons()
 {
 	// Auf Initialisierung der Joystick-Daten-Arrays warten
-	while(!_joystickDataOK)
+	while (!_joystickDataOK)
 		usleep(100000);
 
 	// Tastendrücke bis zum Beenden der Motorsteuerung verarbeiten
@@ -233,7 +239,7 @@ void MotorControl::ComputeInputButtons()
 	bool radioIsPlaying = false; // Radio aktiv?
 
 	int cam_servo_direction = 0; // Richtung in den der Servo gedreht werden soll
-	while(_running)
+	while (_running)
 	{
 		// Joystick-Daten sperren
 		_joystickMutex->lock();
@@ -256,7 +262,7 @@ void MotorControl::ComputeInputButtons()
 		_joystickMutex->unlock();
 
 		// Soll der Server beendet werden?
-		if(kill_server)
+		if (kill_server)
 		{
 			// Beide Motoren direkt anhalten
 			SendMotorSpeed(MBOTH, 0);
@@ -266,7 +272,7 @@ void MotorControl::ComputeInputButtons()
 		}
 
 		// Wurde der Status verändert?
-		if(horn != _hornActive)
+		if (horn != _hornActive)
 		{
 			// Relay schalten
 			_relayProtocol->SetRelay(1, horn);
@@ -298,7 +304,7 @@ void MotorControl::ComputeInputButtons()
 		radioButtonPressed = radio;
 
 		// Kamera-Servo drehen?
-		if(cam_servo_direction != 0)
+		if (cam_servo_direction != 0)
 		{
 			// Kamera drehen
 			_arduino->ChangeCamPosition(0, cam_servo_direction * 2);
@@ -309,65 +315,65 @@ void MotorControl::ComputeInputButtons()
 void MotorControl::ComputeClientCommand(BYTE *data, int dataLength, int clientID)
 {
 	// Kommandobyte prüfen
-	switch(data[0])
+	switch (data[0])
 	{
-		// JOYSTICK_HEADER
-		case 1:
+	// JOYSTICK_HEADER
+	case 1:
+	{
+		// Joystick-Daten sperren
+		_joystickMutex->lock();
 		{
-			// Joystick-Daten sperren
-			_joystickMutex->lock();
-			{
-				// Werte auslesen
-				_joystickAxisCount = static_cast<int>(data[1]);
-				_joystickButtonCount = static_cast<int>(data[2]);
+			// Werte auslesen
+			_joystickAxisCount = static_cast<int>(data[1]);
+			_joystickButtonCount = static_cast<int>(data[2]);
 
-				// Empfangsarrays initialisieren
-				_joystickAxis = new short[_joystickAxisCount];
-				_joystickButtons = new BYTE[_joystickButtonCount];
+			// Empfangsarrays initialisieren
+			_joystickAxis = new short[_joystickAxisCount];
+			_joystickButtons = new BYTE[_joystickButtonCount];
 
-				// Empfangsarrays auf 0 setzen, damit keine zufälligen Befehle ausgeführt werden
-				for(int i = 0; i < _joystickAxisCount; ++i)
-					_joystickAxis[i] = 0;
-				for(int i = 0; i < _joystickButtonCount; ++i)
-					_joystickButtons[i] = 0;
-			}
-			_joystickMutex->unlock();
-
-			// Joystick-Daten-Arrays sind initialisiert
-			_joystickDataOK = true;
-
-			// Fertig
-			break;
+			// Empfangsarrays auf 0 setzen, damit keine zufälligen Befehle ausgeführt werden
+			for (int i = 0; i < _joystickAxisCount; ++i)
+				_joystickAxis[i] = 0;
+			for (int i = 0; i < _joystickButtonCount; ++i)
+				_joystickButtons[i] = 0;
 		}
+		_joystickMutex->unlock();
 
-		// JOYSTICK_DATA
-		case 2:
+		// Joystick-Daten-Arrays sind initialisiert
+		_joystickDataOK = true;
+
+		// Fertig
+		break;
+	}
+
+	// JOYSTICK_DATA
+	case 2:
+	{
+		// Wurde der Joystick-Daten-Header empfangen?
+		if (!_joystickDataOK)
+			throw THOMASException("Es wurde noch kein JOYSTICK_HEADER-Kommando empfangen!");
+
+		// Joystick-Daten sperren
+		_joystickMutex->lock();
 		{
-			// Wurde der Joystick-Daten-Header empfangen?
-			if(!_joystickDataOK)
-				throw THOMASException("Es wurde noch kein JOYSTICK_HEADER-Kommando empfangen!");
+			// Achsendaten kopieren
+			memcpy(_joystickAxis, &data[1], sizeof(short) * _joystickAxisCount);
 
-			// Joystick-Daten sperren
-			_joystickMutex->lock();
-			{
-				// Achsendaten kopieren
-				memcpy(_joystickAxis, &data[1], sizeof(short) * _joystickAxisCount);
-
-				// Buttonwerte kopieren
-				memcpy(_joystickButtons, &data[1 + sizeof(short) * _joystickAxisCount], sizeof(BYTE) * _joystickButtonCount);
-			}
-			_joystickMutex->unlock();
-
-			// Fertig
-			break;
+			// Buttonwerte kopieren
+			memcpy(_joystickButtons, &data[1 + sizeof(short) * _joystickAxisCount], sizeof(BYTE) * _joystickButtonCount);
 		}
+		_joystickMutex->unlock();
 
-		// Ungültiges Kommando
-		default:
-		{
-			// Fehler
-			std::cout << "\033[1;31m" << "[WARNUNG]" << "\033[0;1m " << "Das erhaltene Kommandobyte (" << data[0] << ") ist ungueltig!" << "\033[0m " << std::endl;
-		}
+		// Fertig
+		break;
+	}
+
+	// Ungültiges Kommando
+	default:
+	{
+		// Fehler
+		std::cout << "\033[1;31m" << "[WARNUNG]" << "\033[0;1m " << "Das erhaltene Kommandobyte (" << data[0] << ") ist ungueltig!" << "\033[0m " << std::endl;
+	}
 	}
 }
 
@@ -377,23 +383,23 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 	BYTE params[2] = {0};
 
 	// Rechter Motor oder beide Motoren?
-	if((motor & MRIGHT) == MRIGHT)
+	if ((motor & MRIGHT) == MRIGHT)
 	{
 		// Neue Rotation? Rotation bestimmen
-		if(_lastSpeed[MRIGHT_ARR] <= 0 && speed > 0)
+		if (_lastSpeed[MRIGHT_ARR] <= 0 && speed > 0)
 		{
 			params[0] = MRIGHT;
 			params[1] = FORWARDS;
 			_rs232->Send(5, params, 2);
 		}
-		else if(_lastSpeed[MRIGHT_ARR] >= 0 && speed < 0)
+		else if (_lastSpeed[MRIGHT_ARR] >= 0 && speed < 0)
 		{
 			params[0] = MRIGHT;
 			params[1] = BACKWARDS;
 			_rs232->Send(5, params, 2);
 		}
 
-		if(_lastSpeed[MRIGHT_ARR] != speed)
+		if (_lastSpeed[MRIGHT_ARR] != speed)
 		{
 			// Geschwindigkeit senden (ohne Vorzeichen)
 			params[0] = MRIGHT;
@@ -404,23 +410,23 @@ void MotorControl::SendMotorSpeed(int motor, short speed)
 	}
 
 	// Linker Motor oder beide Motoren?
-	if((motor & MLEFT) == MLEFT)
+	if ((motor & MLEFT) == MLEFT)
 	{
 		// Neue Rotation? Rotation bestimmen
-		if(_lastSpeed[MLEFT_ARR] <= 0 && speed > 0)
+		if (_lastSpeed[MLEFT_ARR] <= 0 && speed > 0)
 		{
 			params[0] = MLEFT;
 			params[1] = FORWARDS;
 			_rs232->Send(5, params, 2);
 		}
-		else if(_lastSpeed[MLEFT_ARR] >= 0 && speed < 0)
+		else if (_lastSpeed[MLEFT_ARR] >= 0 && speed < 0)
 		{
 			params[0] = MLEFT;
 			params[1] = BACKWARDS;
 			_rs232->Send(5, params, 2);
 		}
 
-		if(_lastSpeed[MLEFT_ARR] != speed)
+		if (_lastSpeed[MLEFT_ARR] != speed)
 		{
 			// Geschwindigkeit senden (ohne Vorzeichen)
 			params[0] = MLEFT;

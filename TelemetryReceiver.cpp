@@ -54,7 +54,7 @@ void TelemetryReceiver::Run(ArduinoProtocol *arduinoProtocol, LaserMeasurement *
 	_videoCapture = cv::VideoCapture(CAMERA);
 
 	// Erfolgreich geöffnet
-	if(!_videoCapture.isOpened())
+	if (!_videoCapture.isOpened())
 		throw THOMASException("Das Videodevice konnte nicht geöffnet werden");
 
 	// Kamera Größenparameter setzten
@@ -98,10 +98,10 @@ void TelemetryReceiver::CaptureFrameThread()
 	cv::Mat frame;
 
 	// Wiederhole bis Windows sicher wird
-	while(true)
+	while (true)
 	{
 		// Ist Client Liste leer?
-		if(UDPClientList.empty())
+		if (UDPClientList.empty())
 		{
 			// Warten -> CPU nicht unnötig belasten
 			usleep(10000);
@@ -111,41 +111,46 @@ void TelemetryReceiver::CaptureFrameThread()
 		// Neuen Frame erstellen
 		_videoCapture >> frame;
 
-// TODO: Sobald die Scannfunktionen implementiert sind dies hier löschen
-_laser->GetDistanceFromImage(frame);
+		// Wurde die LaserMeasurement Methode übergeben?
+		if (_laser != NULL) {
+			// TODO: Sobald die Scannfunktionen implementiert sind dies hier löschen
+			_laser->GetDistanceFromImage(frame);
+		}
 
 		// Farben in 8Bit konvertieren
 		cvtColor(frame, frame, CV_8U);
 
-		// Letze Laserposition abrufen
-		int lastLaserPosition = _laser->GetLastLaserPosition();
+		// Wurde die LaserMeasurement Methode übergeben?
+		if (_laser != NULL) {
+			// Letze Laserposition abrufen
+			int lastLaserPosition = _laser->GetLastLaserPosition();
 
-		// Laserposition auf Gültigkeit überprüfen
-		if(lastLaserPosition >= 0)
-		{
-			// Startpunkt bestimmen
-			cv::Point startPoint;
-			startPoint.x = lastLaserPosition;
-			startPoint.y = LASER_MARKER_POSITION - 50;
+			// Laserposition auf Gültigkeit überprüfen
+			if (lastLaserPosition >= 0)
+			{
+				// Startpunkt bestimmen
+				cv::Point startPoint;
+				startPoint.x = lastLaserPosition;
+				startPoint.y = LASER_MARKER_POSITION - 50;
 
-			// Endpunkt bestimmen
-			cv::Point endPoint;
-			endPoint.x = lastLaserPosition;
-			endPoint.y = LASER_MARKER_POSITION + 50;
+				// Endpunkt bestimmen
+				cv::Point endPoint;
+				endPoint.x = lastLaserPosition;
+				endPoint.y = LASER_MARKER_POSITION + 50;
 
-			// Position einzeichnen
-			cv::line(frame, startPoint, endPoint, cv::Scalar(0, 0, 255), 3);
+				// Position einzeichnen
+				cv::line(frame, startPoint, endPoint, cv::Scalar(0, 0, 255), 3);
+			}
 		}
-
 		// JPEG Format setzten
 		param[0] = CV_IMWRITE_JPEG_QUALITY;
 
 		// Durch alle Clients iterieren und Frame senden
-		for(auto &client : UDPClientList)
+		for (auto &client : UDPClientList)
 		{
 
 			// Läuft der Server bereits, oder wurde er nur instanziert
-			if(!client.second.GetServerRunning())
+			if (!client.second.GetServerRunning())
 				// Fortfahren
 				continue;
 
@@ -156,7 +161,7 @@ _laser->GetDistanceFromImage(frame);
 			cv::Mat clientFrame;
 
 			// Bilder auf die gewünschte Größe anpassen
-			cv::resize(frame,clientFrame, cv::Size(CAMERA_WIDTH * ((float) client.second.GetFrameSize() / 100), CAMERA_HEIGHT * ((float) client.second.GetFrameSize() / 100)));
+			cv::resize(frame, clientFrame, cv::Size(CAMERA_WIDTH * ((float) client.second.GetFrameSize() / 100), CAMERA_HEIGHT * ((float) client.second.GetFrameSize() / 100)));
 
 			// Kompressionsrate setzten
 			param[1] = client.second.GetFrameQuality();
@@ -165,10 +170,10 @@ _laser->GetDistanceFromImage(frame);
 			imencode(".jpeg", clientFrame, buff, param);
 
 			// Durch Frames iterieren
-			for(int i = 0; i < buff.size(); i++)
+			for (int i = 0; i < buff.size(); i++)
 			{
 				// Alle 64000 Bytes aufrufen
-				if(i % 64000 == 0 && i != 0)
+				if (i % 64000 == 0 && i != 0)
 				{
 					// Neues Array mit 64000 Bytes erstellen
 					std::vector<uchar> newBuff(buff.begin() + i - 64000, buff.begin() + i);
@@ -178,7 +183,7 @@ _laser->GetDistanceFromImage(frame);
 				}
 
 				// Entspricht "i" die Buffersize?
-				if(i == buff.size() - 1)
+				if (i == buff.size() - 1)
 				{
 					// Array mit restlichen Bytes erstellen
 					std::vector<uchar> newBuff(buff.begin() + 64000 * ((int) buff.size() / 64000), buff.end());
@@ -194,35 +199,35 @@ _laser->GetDistanceFromImage(frame);
 void TelemetryReceiver::OnClientStatusChange(int clientID, int status, const char *ip)
 {
 	// Status analysieren
-	switch(status)
+	switch (status)
 	{
-		// Client connected?
-		case STATUS_CONNECT:
-		{
-			// Neuen UDPClient erstellen und in Liste speichern
-			UDPClientList[clientID] = UDPClient();
+	// Client connected?
+	case STATUS_CONNECT:
+	{
+		// Neuen UDPClient erstellen und in Liste speichern
+		UDPClientList[clientID] = UDPClient();
 
-			// IP setzten
-			UDPClientList[clientID].SetIP(ip);
+		// IP setzten
+		UDPClientList[clientID].SetIP(ip);
 
 
-			// CPU-Last Thread aktivieren
-			_statusInformation->SetClientConnectStatus(true);
+		// CPU-Last Thread aktivieren
+		_statusInformation->SetClientConnectStatus(true);
 
-			break;
-		}
+		break;
+	}
 
-		// Client disconnected?
-		case STATUS_DISCONNECT:
-		{
-			// UDPClient löschen und aus Liste entfernen
-			UDPClientList.erase(clientID);
+	// Client disconnected?
+	case STATUS_DISCONNECT:
+	{
+		// UDPClient löschen und aus Liste entfernen
+		UDPClientList.erase(clientID);
 
-			// CPU-Last Thread stoppen
-			_statusInformation->SetClientConnectStatus(false);
+		// CPU-Last Thread stoppen
+		_statusInformation->SetClientConnectStatus(false);
 
-			break;
-		}
+		break;
+	}
 
 	}
 }
@@ -230,199 +235,199 @@ void TelemetryReceiver::OnClientStatusChange(int clientID, int status, const cha
 void TelemetryReceiver::ComputeTCPServerData(BYTE *data, int dataLength, int clientID)
 {
 	// ClientID in der UDPCLient Liste?
-	if(UDPClientList.find(clientID) == UDPClientList.end())
+	if (UDPClientList.find(clientID) == UDPClientList.end())
 		throw THOMASException("Die Client ID konnte nicht gefunden werden");
 
 	// Daten analysieren
-	switch(data[0])
+	switch (data[0])
 	{
-		// Headerdaten => Kommandobyte, Port
-		case 1: {
-			// Bytes zu Short (uint16)
-			unsigned short port = (data[1] << 8) | data[2];
+	// Headerdaten => Kommandobyte, Port
+	case 1: {
+		// Bytes zu Short (uint16)
+		unsigned short port = (data[1] << 8) | data[2];
 
-			// Verbindng zum Client aufnehmen
-			UDPClientList[clientID].CreateUDPClient(port);
+		// Verbindng zum Client aufnehmen
+		UDPClientList[clientID].CreateUDPClient(port);
+
+		break;
+	}
+
+	// Statusfeld => Kommandobyte, ID des Feldes
+	case 2:
+	{
+		switch (data[1])
+		{
+		// Anforderung der CPU-Last
+		case FIELD_CPU:
+		{
+
+			// CPU-Last Sring erstellen
+			std::string CPULoad = std::to_string(static_cast<int>(_statusInformation->GetCPUUsageSaved()));
+			CPULoad += "%\n";
+
+			// Informationen in Vector Laden
+			std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_CPU, CPULoad));
+
+			// Neuen Byte Buffer erstellen
+			BYTE buff[vecData.size()];
+
+			// Daten in Vector kopieren
+			std::copy(vecData.begin(), vecData.end(), buff);
+
+			// Daten zum Client senden
+			_server->Send(clientID, buff, vecData.size());
 
 			break;
 		}
 
-		// Statusfeld => Kommandobyte, ID des Feldes
-		case 2:
+		// Anforderung des Rams
+		case FIELD_MEMORY:
 		{
-			switch(data[1])
+			// RAM-Nutzungs Sring erstellen
+			std::string memoryUsage = std::to_string(_statusInformation->GetMemoryInfo()[2]);
+			memoryUsage += "MB\n";
+
+			// Informationen in Vector Laden
+			std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_MEMORY, memoryUsage));
+
+			// Neuen Byte Buffer erstellen
+			BYTE buff[vecData.size()];
+
+			// Daten in Vector kopieren
+			std::copy(vecData.begin(), vecData.end(), buff);
+
+			// Daten zum Client senden
+			_server->Send(clientID, buff, vecData.size());
+
+			break;
+		}
+
+		// Anforderung der Festplattennutzung
+		case FIELD_DISK:
+		{
+			// Festplatten-Nutzungs Sring erstellen
+			std::string diskUsage = std::to_string(_statusInformation->GetDiskSpace());
+			diskUsage += "MB\n";
+
+			// Informationen in Vector Laden
+			std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_DISK, diskUsage));
+
+			// Neuen Byte Buffer erstellen
+			BYTE buff[vecData.size()];
+
+			// Daten in Vector kopieren
+			std::copy(vecData.begin(), vecData.end(), buff);
+
+			// Daten zum Client senden
+			_server->Send(clientID, buff, vecData.size());
+
+			break;
+		}
+
+		// Anforderung der SSID
+		case FIELD_SSID:
+		{
+
+			// SSID String erstellen
+			std::string SSID = _arduino->GetSSID() + "\n";
+
+			// Informationen in Vector Laden
+			std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_SSID, SSID));
+
+			// Neuen Byte Buffer erstellen
+			BYTE buff[vecData.size()];
+
+			// Daten in Vector kopieren
+			std::copy(vecData.begin(), vecData.end(), buff);
+
+			// Daten zum Client senden
+			_server->Send(clientID, buff, vecData.size());
+
+			break;
+		}
+
+		// Anforderung der Signal-Stärke
+		case FIELD_SIGNAL:
+		{
+			// Signalstärken String erstellen
+			std::string signalStrength = std::to_string(_arduino->GetSignalStrength()) + "\n";
+
+			// Informationen in Vector Laden
+			std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_SIGNAL, signalStrength));
+
+			// Neuen Byte Buffer erstellen
+			BYTE buff[vecData.size()];
+
+			// Daten in Vector kopieren
+			std::copy(vecData.begin(), vecData.end(), buff);
+
+			// Daten zum Client senden
+			_server->Send(clientID, buff, vecData.size());
+			break;
+		}
+
+		// Anforderung der Bandbreite
+		case FIELD_BANDWIDTH:
+		{
+			// Bandbreiten String erstellen
+			std::string bandwidth = _arduino->GetBandwidth() + "MBit/s\n";
+
+			// Informationen in Vector Laden
+			std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_BANDWIDTH, bandwidth));
+
+			// Neuen Byte Buffer erstellen
+			BYTE buff[vecData.size()];
+
+			// Daten in Vector kopieren
+			std::copy(vecData.begin(), vecData.end(), buff);
+
+			// Daten zum Client senden
+			_server->Send(clientID, buff, vecData.size());
+			break;
+		}
+
+		// Anforderung des Laser-Abstandswertes
+		case FIELD_LASER_DISTANCE:
+		{
+			// Abstandswert abrufen
+			int laserDistance = _laser->GetLastDistance();
+
+			// Entfernungs String
+			std::string distance = "Unbekannt\n";
+
+			// Wert auf Gültigkeit überprüfen
+			if (laserDistance >= 0)
 			{
-				// Anforderung der CPU-Last
-				case FIELD_CPU:
-				{
-
-					// CPU-Last Sring erstellen
-					std::string CPULoad = std::to_string(static_cast<int>(_statusInformation->GetCPUUsageSaved()));
-					CPULoad += "%\n";
-
-					// Informationen in Vector Laden
-					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_CPU, CPULoad));
-
-					// Neuen Byte Buffer erstellen
-					BYTE buff[vecData.size()];
-
-					// Daten in Vector kopieren
-					std::copy(vecData.begin(), vecData.end(), buff);
-
-					// Daten zum Client senden
-					_server->Send(clientID, buff, vecData.size());
-
-					break;
-				}
-
-				// Anforderung des Rams
-				case FIELD_MEMORY:
-				{
-					// RAM-Nutzungs Sring erstellen
-					std::string memoryUsage = std::to_string(_statusInformation->GetMemoryInfo()[2]);
-					memoryUsage += "MB\n";
-
-					// Informationen in Vector Laden
-					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_MEMORY, memoryUsage));
-
-					// Neuen Byte Buffer erstellen
-					BYTE buff[vecData.size()];
-
-					// Daten in Vector kopieren
-					std::copy(vecData.begin(), vecData.end(), buff);
-
-					// Daten zum Client senden
-					_server->Send(clientID, buff, vecData.size());
-
-					break;
-				}
-
-				// Anforderung der Festplattennutzung
-				case FIELD_DISK:
-				{
-					// Festplatten-Nutzungs Sring erstellen
-					std::string diskUsage = std::to_string(_statusInformation->GetDiskSpace());
-					diskUsage += "MB\n";
-
-					// Informationen in Vector Laden
-					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_DISK, diskUsage));
-
-					// Neuen Byte Buffer erstellen
-					BYTE buff[vecData.size()];
-
-					// Daten in Vector kopieren
-					std::copy(vecData.begin(), vecData.end(), buff);
-
-					// Daten zum Client senden
-					_server->Send(clientID, buff, vecData.size());
-
-					break;
-				}
-
-				// Anforderung der SSID
-				case FIELD_SSID:
-				{
-
-					// SSID String erstellen
-					std::string SSID = _arduino->GetSSID() + "\n";
-
-					// Informationen in Vector Laden
-					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_SSID, SSID));
-
-					// Neuen Byte Buffer erstellen
-					BYTE buff[vecData.size()];
-
-					// Daten in Vector kopieren
-					std::copy(vecData.begin(), vecData.end(), buff);
-
-					// Daten zum Client senden
-					_server->Send(clientID, buff, vecData.size());
-
-					break;
-				}
-
-				// Anforderung der Signal-Stärke
-				case FIELD_SIGNAL:
-				{
-					// Signalstärken String erstellen
-					std::string signalStrength = std::to_string(_arduino->GetSignalStrength()) + "\n";
-
-					// Informationen in Vector Laden
-					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_SIGNAL, signalStrength));
-
-					// Neuen Byte Buffer erstellen
-					BYTE buff[vecData.size()];
-
-					// Daten in Vector kopieren
-					std::copy(vecData.begin(), vecData.end(), buff);
-
-					// Daten zum Client senden
-					_server->Send(clientID, buff, vecData.size());
-					break;
-				}
-
-				// Anforderung der Bandbreite
-				case FIELD_BANDWIDTH:
-				{
-					// Bandbreiten String erstellen
-					std::string bandwidth = _arduino->GetBandwidth() + "MBit/s\n";
-
-					// Informationen in Vector Laden
-					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_BANDWIDTH, bandwidth));
-
-					// Neuen Byte Buffer erstellen
-					BYTE buff[vecData.size()];
-
-					// Daten in Vector kopieren
-					std::copy(vecData.begin(), vecData.end(), buff);
-
-					// Daten zum Client senden
-					_server->Send(clientID, buff, vecData.size());
-					break;
-				}
-
-				// Anforderung des Laser-Abstandswertes
-				case FIELD_LASER_DISTANCE:
-				{
-					// Abstandswert abrufen
-					int laserDistance = _laser->GetLastDistance();
-
-					// Entfernungs String
-					std::string distance = "Unbekannt\n";
-
-					// Wert auf Gültigkeit überprüfen
-					if (laserDistance >= 0)
-					{
-						// Entfernungs String erstellen
-						distance = std::to_string(laserDistance);
-						distance += "cm\n";
-					}
-
-					// Informationen in Vector Laden
-					std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_LASER_DISTANCE, distance));
-
-					// Neuen Byte Buffer erstellen
-					BYTE buff[vecData.size()];
-
-					// Daten in Vector kopieren
-					std::copy(vecData.begin(), vecData.end(), buff);
-
-					// Daten zum Client senden
-					_server->Send(clientID, buff, vecData.size());
-					break;
-				}
+				// Entfernungs String erstellen
+				distance = std::to_string(laserDistance);
+				distance += "cm\n";
 			}
+
+			// Informationen in Vector Laden
+			std::vector<BYTE> vecData (GenerateByteArray(1, FIELD_LASER_DISTANCE, distance));
+
+			// Neuen Byte Buffer erstellen
+			BYTE buff[vecData.size()];
+
+			// Daten in Vector kopieren
+			std::copy(vecData.begin(), vecData.end(), buff);
+
+			// Daten zum Client senden
+			_server->Send(clientID, buff, vecData.size());
 			break;
 		}
-
-		case 3:
-		{
-			// Daten anpassen und setzten
-			UDPClientList[clientID].SetFrameQuality((data[1] < 2) ? 1 : (data[1] > 100) ? 100 : data[1]);
-			UDPClientList[clientID].SetFrameSize((data[2] < 2) ? 1 : (data[2] > 100) ? 100 : data[2]);
-
-			break;
 		}
+		break;
+	}
+
+	case 3:
+	{
+		// Daten anpassen und setzten
+		UDPClientList[clientID].SetFrameQuality((data[1] < 2) ? 1 : (data[1] > 100) ? 100 : data[1]);
+		UDPClientList[clientID].SetFrameSize((data[2] < 2) ? 1 : (data[2] > 100) ? 100 : data[2]);
+
+		break;
+	}
 	}
 }
 

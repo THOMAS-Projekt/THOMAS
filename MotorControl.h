@@ -217,7 +217,7 @@ namespace THOMAS
 		~MotorControl();
 
 		// Startet die Motorsteuerung.
-		void Run(ArduinoProtocol *arduinoProtocol);
+		void Run(ArduinoProtocol *arduinoProtocol, bool enableCollisionDetection = true);
 
 		// Beendet die Motorsteuerung.
 		void Stop();

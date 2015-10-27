@@ -125,7 +125,7 @@ namespace THOMAS {
 		TelemetryReceiver();
 
 		// Wird beim Start ausgeführt
-		void Run(ArduinoProtocol *arduinoProtocol, LaserMeasurement *laserMeasurement);
+		void Run(ArduinoProtocol *arduinoProtocol, LaserMeasurement *laserMeasurement = NULL);
 
 	};
 }

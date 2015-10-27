@@ -114,6 +114,9 @@ namespace THOMAS
 		// Auf Neustart des Arduinos warten
 		void WaitForArduino();
 
+		// Sendet den Betriebsmodus
+		void SendMode(bool minimalMode);
+
 		// Die SSID des verbundenen Netzwerkes an den Arduino senden
 		void SetCurrentSSID();
 
@@ -130,7 +133,7 @@ namespace THOMAS
 		std::string GetBandwidth();
 
 		// Startet einen neuen Thread
-		void Run();
+		void Run(bool minimalMode = false);
 
 		// Stoppt den Thread
 		void Stop();

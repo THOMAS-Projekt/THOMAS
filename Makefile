@@ -5,8 +5,14 @@ LINKERARGS= -pthread -g -O0 -v -da -Q `pkg-config --libs opencv`
 all: main.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o THOMASException.o LaserMeasurement.o TelemetryReceiver.o UDPClient.o StatusInformation.o CollisionDetection.o RelayProtocol.o
 	g++ $(OPENCVARGS) THOMASException.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o LaserMeasurement.o TelemetryReceiver.o UDPClient.o StatusInformation.o main.o CollisionDetection.o RelayProtocol.o -o thomas $(LINKERARGS)
 
+scanner: scanner.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o THOMASException.o LaserMeasurement.o TelemetryReceiver.o UDPClient.o StatusInformation.o CollisionDetection.o RelayProtocol.o
+	g++ $(OPENCVARGS) THOMASException.o RS232.o ArduinoCom.o ArduinoProtocol.o TCPServer.o MotorControl.o LaserMeasurement.o TelemetryReceiver.o UDPClient.o StatusInformation.o scanner.o CollisionDetection.o RelayProtocol.o -o scanner $(LINKERARGS)
+
 main.o: main.cpp
 	g++ -c main.cpp $(CPPARGS)
+
+scanner.o: scanner.cpp
+	g++ -c scanner.cpp $(CPPARGS)
 
 test: test.o TCPServer.o
 	g++ TCPServer.o test.o -o test $(LINKERARGS)
