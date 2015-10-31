@@ -50,9 +50,9 @@ ArduinoCom::ArduinoCom()
 	// Aktuelle Anschluss-Optionen abrufen
 	tcgetattr(_handle, &fOpt);
 
-	// Baudrate setzen (9600);
-	cfsetispeed(&fOpt, B9600); // Input
-	cfsetospeed(&fOpt, B9600); // Output
+	// Baudrate setzen (115200);
+	cfsetispeed(&fOpt, B115200); // Input
+	cfsetospeed(&fOpt, B115200); // Output
 
 	// Konfigurieren, dass das Programm auf eine Antwort warten soll
 	fOpt.c_cc[VMIN] = 1;
@@ -65,7 +65,7 @@ ArduinoCom::ArduinoCom()
 	fOpt.c_lflag &= ~ (ECHO | ECHOCTL | ICANON | ISIG | IEXTEN);
 
 	// Linux-Befehl zum manuellen Resetten des Arduinos:
-	//stty -F /dev/ttyACM0 cs8 9600 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
+	//stty -F /dev/ttyACM0 cs8 115200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
 
 	// Neue Port-Optionen einsetzen
 	tcsetattr(_handle, TCSAFLUSH, &fOpt);
